@@ -11,7 +11,14 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "mkdocs>=1.6.1",
+    "mkdocs-gen-files>=0.6.1",
+    "mkdocs-literate-nav>=0.6.3",
+    "mkdocs-material>=9.7.6",
+    "mkdocs-section-index>=0.3.12",
+    "mkdocstrings[python]>=1.0.4",
     "mypy>=1.20.1",
+    "pytest>=9.0.1",
     "ruff>=0.15.11",
 ]
 
@@ -19,4 +26,3 @@ dev = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-

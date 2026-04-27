@@ -1,0 +1,119 @@
+site_name: MetaTrader5 Wrapper
+site_description: Typed, Pythonic wrapper around the MetaTrader5 Python API
+site_url: https://haris.github.io/metatrader5_wrapper/
+repo_url: https://github.com/haris/metatrader5_wrapper
+repo_name: haris/metatrader5_wrapper
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.instant
+    - navigation.instant.loading
+    - navigation.sections
+    - navigation.tracking
+    - navigation.top
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - search.suggest
+    - search.highlight
+    - search.share
+    - toc.follow
+    - header.autohide
+  palette:
+    # Dark mode (default)
+    - scheme: slate
+      primary: indigo
+      accent: cyan
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to light mode
+    # Light mode
+    - scheme: default
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/lightbulb
+        name: Switch to dark mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  favicon: assets/favicon.ico
+  logo: assets/logo.svg
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: "¶"
+      permalink_class: "headerlink"
+      title: "Link to this section"
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight:
+      use_pygments: true
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:pymdownx.emoji.twemoji
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+
+plugins:
+  - search:
+      lang: en
+      separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|^(?=[^a-z])'
+  - mkdocstrings:
+      handlers:
+        python:
+          paths:
+            - src
+          options:
+            show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            separate_signature: true
+            show_signature_annotations: true
+            inherited_members: true
+            docstring_style: google
+            docstring_options:
+              ignore_init_summary: false
+            merge_init_into_class: true
+            filters:
+              - "!^_"
+            members_order: source
+          import:
+            - https://docs.python.org/3/objects.inv
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/haris/metatrader5_wrapper
+      name: GitHub
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/metatrader5-wrapper/
+      name: PyPI
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Guides:
+      - Connection: guides/connection.md
+      - Results Model: guides/results.md
+      - Client vs Functions: guides/client-vs-functions.md
+      - Symbols and Ticks: guides/symbols.md
+      - Positions: guides/positions.md
+      - Connection Design Notes: connection_design.md
+  - API Reference: api/index.md
+  - Legacy API Notes: api_reference.md
