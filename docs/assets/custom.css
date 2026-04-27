@@ -4,6 +4,16 @@ body {
     color: #e0e0e0; /* Light text */
 }
 
+.md-header__button.md-logo img,
+.md-header__button.md-logo svg {
+    width: 2.75rem;
+    height: 2.75rem;
+}
+
+.md-header__button.md-logo {
+    padding: 0.2rem;
+}
+
 .navbar {
     position: sticky;
     top: 0;

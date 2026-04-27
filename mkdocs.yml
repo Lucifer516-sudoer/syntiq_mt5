@@ -8,8 +8,6 @@ theme:
   name: material
   language: en
   features:
-    - navigation.instant
-    - navigation.instant.loading
     - navigation.sections
     - navigation.tracking
     - navigation.top
