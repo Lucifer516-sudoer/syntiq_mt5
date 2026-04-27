@@ -1,8 +1,8 @@
 site_name: MetaTrader5 Wrapper
 site_description: Typed, Pythonic wrapper around the MetaTrader5 Python API
 site_url: https://haris.github.io/metatrader5_wrapper/
-repo_url: https://github.com/haris/metatrader5_wrapper
-repo_name: haris/metatrader5_wrapper
+repo_url: https://github.com/Lucifer516-sudoer/metatrader5_wrapper
+repo_name: Lucifer516-sudoer/metatrader5_wrapper
 
 theme:
   name: material
@@ -98,7 +98,7 @@ plugins:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/haris/metatrader5_wrapper
+      link: https://github.com/Lucifer516-sudoer/metatrader5_wrapper
       name: GitHub
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/metatrader5-wrapper/
