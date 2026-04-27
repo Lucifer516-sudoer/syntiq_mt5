@@ -1,5 +1,9 @@
 # Connection
 
+---
+## Next Steps
+[Results Model](results.md)
+
 The wrapper keeps connection logic explicit. MetaTrader 5 initialization and
 account login are treated as separate stages so failures can be reported with a
 clear `stage`, `error_code`, and `error_message`.

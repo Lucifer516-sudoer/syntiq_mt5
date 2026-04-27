@@ -21,6 +21,8 @@ theme:
     - search.share
     - toc.follow
     - header.autohide
+  extra_css:
+    - assets/custom.css
   palette:
     # Dark mode (default)
     - scheme: slate
@@ -39,7 +41,6 @@ theme:
   font:
     text: Roboto
     code: Roboto Mono
-  favicon: assets/favicon.ico
   logo: assets/logo.svg
 
 markdown_extensions:

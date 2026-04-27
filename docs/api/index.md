@@ -1,5 +1,7 @@
 # API Reference
 
+<img src="assets/logo.svg" alt="Logo" width="300" />
+
 This section is generated from the package's public modules and docstrings.
 Use it for exact signatures, public models, and exported functions.
 
@@ -30,3 +32,7 @@ Use it for exact signatures, public models, and exported functions.
 ## Terminal
 
 ::: metatrader5_wrapper.terminal
+
+---
+## Next Steps
+[Getting Started](../getting-started.md)

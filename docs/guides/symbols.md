@@ -42,3 +42,6 @@ from metatrader5_wrapper import symbol_select
 
 result = symbol_select("EURUSD", enable=True)
 ```
+---
+## Next Steps
+[Positions](positions.md)

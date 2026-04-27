@@ -1,5 +1,9 @@
 # Client vs Functions
 
+---
+## Next Steps
+[Connection](connection.md)
+
 The package supports two public styles.
 
 ## Start with the client

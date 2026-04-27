@@ -71,3 +71,7 @@ immediately and binds it to the returned result object.
 ## Historical Orders and Deals
 
 The new historical functions return results wrapped in `OperationResult` with typed models for `HistoryOrder` and `HistoryDeal`.
+
+---
+## Next Steps
+[Symbols and Ticks](symbols.md)

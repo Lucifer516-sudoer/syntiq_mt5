@@ -1,5 +1,9 @@
 # Getting Started
 
+---
+## Next Steps
+[API Reference](api/index.md)
+
 
 ## New Features
 
@@ -9,6 +13,17 @@ The wrapper now includes support for historical orders and deals.
 
 ```bash
 pip install metatrader5-wrapper
+```
+
+## Build the docs
+
+The documentation site currently targets the MkDocs 1.x ecosystem.
+Material for MkDocs and the plugins used by this project are not compatible
+with MkDocs 2.0, so keep the docs toolchain on `mkdocs<2`.
+
+```bash
+uv sync --all-groups
+uv run mkdocs build
 ```
 
 ## Recommended path: use the client

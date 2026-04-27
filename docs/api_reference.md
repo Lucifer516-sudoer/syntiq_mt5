@@ -1,5 +1,9 @@
 # API Reference
 
+---
+## Next Steps
+[Getting Started](getting-started.md)
+
 `metatrader5_wrapper` is a typed facade over the official `MetaTrader5` Python
 package. Public functions call MetaTrader 5, immediately capture
 `MetaTrader5.last_error()`, and return Pydantic result models instead of relying

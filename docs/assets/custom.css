@@ -1,0 +1,33 @@
+body {
+    font-family: system-ui, sans-serif;
+    background-color: #121212; /* Dark mode background */
+    color: #e0e0e0; /* Light text */
+}
+
+.navbar {
+    position: sticky;
+    top: 0;
+    background-color: #1e1e1e; /* Dark navbar */
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+}
+
+.sidebar {
+    position: fixed;
+    width: 200px;
+    height: 100%;
+    background-color: #1e1e1e;
+    overflow-y: auto;
+}
+
+.content {
+    margin-left: 220px; /* Space for sidebar */
+    padding: 20px;
+}
+
+.footer-nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+}

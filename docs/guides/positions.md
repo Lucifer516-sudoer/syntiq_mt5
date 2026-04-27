@@ -1,5 +1,9 @@
 # Positions
 
+---
+## Next Steps
+[Results Model](results.md)
+
 The positions API exposes the current open positions in the connected MT5
 session.
 

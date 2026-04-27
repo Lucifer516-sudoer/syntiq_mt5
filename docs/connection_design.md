@@ -36,3 +36,7 @@ Problem:
 
 Need:
 - Capture and expose MT5 error code + message
+
+---
+## Next Steps
+[Getting Started](getting-started.md)
