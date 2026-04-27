@@ -1,4 +1,5 @@
 # MetaTrader5 Wrapper
+[![Deploy Documentation](https://github.com/Lucifer516-sudoer/metatrader5_wrapper/actions/workflows/deploy-docs.yml/badge.svg)](https://github.com/Lucifer516-sudoer/metatrader5_wrapper/actions/workflows/deploy-docs.yml)
 
 **Typed, Pythonic access to the MetaTrader 5 API.** Keep MT5's power, drop the awkward parts.
 
