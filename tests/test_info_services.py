@@ -2,7 +2,7 @@ from collections import namedtuple
 
 from metatrader5_wrapper._core.results import MT5DataCallResult, MT5ErrorResult
 from metatrader5_wrapper.account.service import account_info
-from metatrader5_wrapper.terminal.service import terminal_info, version
+from metatrader5_wrapper.terminal.service import shutdown, terminal_info, version
 
 
 def test_account_info_returns_typed_model(monkeypatch) -> None:
@@ -177,3 +177,21 @@ def test_version_returns_typed_model(monkeypatch) -> None:
     assert result.data is not None
     assert result.data.version == 500
     assert result.data.build == 5000
+
+
+def test_shutdown_returns_success(monkeypatch) -> None:
+    calls: list[str] = []
+
+    def fake_shutdown_terminal() -> None:
+        calls.append("shutdown")
+
+    monkeypatch.setattr(
+        "metatrader5_wrapper.terminal.service.mt5_connection.shutdown_terminal",
+        fake_shutdown_terminal,
+    )
+
+    result = shutdown()
+
+    assert calls == ["shutdown"]
+    assert result.success is True
+    assert result.message == "MetaTrader 5 terminal shutdown completed."
