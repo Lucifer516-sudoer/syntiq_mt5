@@ -9,6 +9,7 @@ on:
       - 'src/**'
       - 'mkdocs.yml'
       - '.github/workflows/deploy-docs.yml'
+      - '*.md'
   pull_request:
     branches:
       - main
