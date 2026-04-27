@@ -11,8 +11,37 @@ from metatrader5_wrapper.connection import (
     initialize,
     login,
 )
+from metatrader5_wrapper.history import (
+    history_deals_get,
+    history_deals_total,
+    history_orders_get,
+    history_orders_total,
+)
+from metatrader5_wrapper.market_book import (
+    market_book_add,
+    market_book_get,
+    market_book_release,
+)
 from metatrader5_wrapper.models import OperationResult
+from metatrader5_wrapper.orders import (
+    TradeCheckResult,
+    TradeOrder,
+    TradeSendResult,
+    order_calc_margin,
+    order_calc_profit,
+    order_check,
+    order_send,
+    orders_get,
+    orders_total,
+)
 from metatrader5_wrapper.positions import Position, positions_get, positions_total
+from metatrader5_wrapper.rates import (
+    copy_rates_from,
+    copy_rates_from_pos,
+    copy_rates_range,
+    copy_ticks_from,
+    copy_ticks_range,
+)
 from metatrader5_wrapper.symbols import (
     SymbolInfo,
     Tick,
@@ -42,9 +71,30 @@ __all__ = [
     "TerminalInfo",
     "TerminalVersion",
     "Tick",
+    "TradeCheckResult",
+    "TradeOrder",
+    "TradeSendResult",
     "account_info",
+    "copy_rates_from",
+    "copy_rates_from_pos",
+    "copy_rates_range",
+    "copy_ticks_from",
+    "copy_ticks_range",
+    "history_deals_get",
+    "history_deals_total",
+    "history_orders_get",
+    "history_orders_total",
     "initialize",
     "login",
+    "market_book_add",
+    "market_book_get",
+    "market_book_release",
+    "order_calc_margin",
+    "order_calc_profit",
+    "order_check",
+    "order_send",
+    "orders_get",
+    "orders_total",
     "positions_get",
     "positions_total",
     "shutdown",
