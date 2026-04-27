@@ -45,7 +45,7 @@ jobs:
           version: "latest"
 
       - name: Install dependencies
-        run: uv sync --all-groups --python 3.12
+        run: uv sync --group dev --python 3.12
 
       - name: Build documentation
         run: uv run mkdocs build --config-file mkdocs.yml --site-dir site
