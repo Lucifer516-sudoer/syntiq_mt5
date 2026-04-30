@@ -78,3 +78,23 @@ def test_error_propagation(monkeypatch):
     res = svc.positions()
     assert not res.success
     assert res.error_message == "positions error"
+
+
+def test_empty_positions_are_success(monkeypatch):
+    fake = FakeMT5()
+    fake.positions_get = lambda **_: []
+    monkeypatch.setattr(positions_service, "mt5", fake)
+    monkeypatch.setattr(raw_mod, "mt5", fake)
+    res = positions_service.PositionService().positions()
+    assert res.success
+    assert res.data == []
+
+
+def test_candle_malformed_payload_returns_failure(monkeypatch):
+    fake = FakeMT5()
+    fake.copy_rates_from_pos = lambda *args: [{"time": 1, "open": 1.0, "high": 2.0, "low": 0.5}]
+    monkeypatch.setattr(market_service, "mt5", fake)
+    monkeypatch.setattr(raw_mod, "mt5", fake)
+    res = market_service.MarketService().get_candles("EURUSD", 1, 1)
+    assert not res.success
+    assert res.error_code == -4

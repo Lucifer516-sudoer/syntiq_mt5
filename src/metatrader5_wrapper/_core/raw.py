@@ -16,6 +16,25 @@ class RawCallResult:
 
 
 def call_mt5(operation: Callable[..., Any], *args: Any, **kwargs: Any) -> RawCallResult:
-    data = operation(*args, **kwargs)
-    code, message = mt5.last_error()
-    return RawCallResult(data=data, error=MT5ErrorInfo(code=code, message=message))
+    data: Any = None
+    call_exception: Exception | None = None
+    try:
+        data = operation(*args, **kwargs)
+    except Exception as exc:  # pragma: no cover - defensive boundary
+        call_exception = exc
+
+    if hasattr(mt5, "last_error"):
+        code, message = mt5.last_error()
+        error = MT5ErrorInfo(code=code, message=message)
+    else:
+        error = MT5ErrorInfo(code=-1, message="MetaTrader5.last_error unavailable")
+
+    if call_exception is not None:
+        return RawCallResult(
+            data=None,
+            error=MT5ErrorInfo(
+                code=error.code if error.code != 0 else -2,
+                message=f"MT5 call raised {type(call_exception).__name__}: {call_exception}",
+            ),
+        )
+    return RawCallResult(data=data, error=error)

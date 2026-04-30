@@ -12,14 +12,25 @@ class MarketService:
         raw = call_mt5(mt5.copy_rates_from_pos, symbol, timeframe, 0, count)
         if raw.data is None:
             return Result.fail(raw.error, context="copy_rates_from_pos")
-        candles = [
-            Candle(
-                time=int(row["time"]),
-                open=float(row["open"]),
-                high=float(row["high"]),
-                low=float(row["low"]),
-                close=float(row["close"]),
+        try:
+            candles = [
+                Candle(
+                    time=int(row["time"]),
+                    open=float(row["open"]),
+                    high=float(row["high"]),
+                    low=float(row["low"]),
+                    close=float(row["close"]),
+                )
+                for row in raw.data
+            ]
+        except (KeyError, TypeError, ValueError) as exc:
+            return Result.fail(
+                raw.error.model_copy(
+                    update={
+                        "code": raw.error.code if raw.error.code != 0 else -4,
+                        "message": f"Invalid MT5 candle payload: {exc}",
+                    }
+                ),
+                context="copy_rates_from_pos",
             )
-            for row in raw.data
-        ]
         return Result.ok(candles, context="copy_rates_from_pos")

@@ -23,19 +23,30 @@ class PositionService:
                 return Result.fail(info_raw.error, context=f"symbol_info:{sym}")
             self._symbol_cache[sym] = (int(info_raw.data.digits), float(info_raw.data.point))
 
-        parsed = [
-            Position(
-                ticket=int(row.ticket),
-                symbol=row.symbol,
-                price_open=float(row.price_open),
-                price_current=float(row.price_current),
-                tp=float(row.tp),
-                sl=float(row.sl),
-                volume=float(row.volume),
-                type=int(row.type),
-                digits=self._symbol_cache[row.symbol][0],
-                point=self._symbol_cache[row.symbol][1],
+        try:
+            parsed = [
+                Position(
+                    ticket=int(row.ticket),
+                    symbol=row.symbol,
+                    price_open=float(row.price_open),
+                    price_current=float(row.price_current),
+                    tp=float(row.tp),
+                    sl=float(row.sl),
+                    volume=float(row.volume),
+                    type=int(row.type),
+                    digits=self._symbol_cache[row.symbol][0],
+                    point=self._symbol_cache[row.symbol][1],
+                )
+                for row in rows
+            ]
+        except (AttributeError, KeyError, TypeError, ValueError) as exc:
+            return Result.fail(
+                raw.error.model_copy(
+                    update={
+                        "code": raw.error.code if raw.error.code != 0 else -3,
+                        "message": f"Invalid MT5 position payload: {exc}",
+                    }
+                ),
+                context="positions_get",
             )
-            for row in rows
-        ]
         return Result.ok(parsed, context="positions_get")
