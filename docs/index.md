@@ -8,12 +8,12 @@ hide:
 
 # syntiq-mt5
 
-### A typed, minimal Python SDK for the MetaTrader 5 API
+### Production-grade MetaTrader 5 SDK for Python
 
-Every call returns `Result[T]` — no exceptions, no magic numbers, no guessing.
+Typed. Reliable. Developer-first.
 
 [Get Started](getting-started.md){ .md-button .md-button--primary }
-[View on GitHub :fontawesome-brands-github:](https://github.com/lucifer516-sudoer/syntiq-mt5){ .md-button }
+[View on GitHub](https://github.com/lucifer516-sudoer/syntiq-mt5){ .md-button .md-button--secondary }
 
 </div>
 
@@ -25,27 +25,19 @@ The raw `MetaTrader5` Python package returns untyped structs, stores errors in g
 
 <div class="grid cards" markdown>
 
--   :material-check-circle:{ .lg .middle } __Typed models__
-
-    ---
+-   :material-check-circle:{ .lg .middle } __Typed Models__
 
     Pydantic v2 models with full IDE completion. No more guessing field names or types.
 
--   :material-shield-check:{ .lg .middle } __No exceptions__
-
-    ---
+-   :material-shield-check:{ .lg .middle } __No Exceptions__
 
     Every operation returns `Result[T]`. Handle success and failure explicitly — no surprises.
 
--   :material-code-tags:{ .lg .middle } __Named constants__
-
-    ---
+-   :material-code-tags:{ .lg .middle } __Named Constants__
 
     Use `ORDER_TYPE_BUY` instead of `0`. Use `TIMEFRAME_H1` instead of `16385`. Self-documenting code.
 
--   :material-connection:{ .lg .middle } __Automatic cleanup__
-
-    ---
+-   :material-connection:{ .lg .middle } __Automatic Cleanup__
 
     Context manager support. `shutdown()` is called automatically — even on exceptions.
 
@@ -140,26 +132,18 @@ pip install syntiq-mt5
 
 -   :material-rocket-launch:{ .lg .middle } __[Quickstart](getting-started.md)__
 
-    ---
-
     Full working example in under 60 seconds
 
 -   :material-chart-timeline:{ .lg .middle } __[Core Concepts](core/lifecycle.md)__
-
-    ---
 
     Understand `initialize → login → use → shutdown`
 
 -   :material-code-braces:{ .lg .middle } __[Tasks](tasks/get-positions.md)__
 
-    ---
-
     Copy-paste recipes for every operation
 
--   :material-book-open-variant:{ .lg .middle } __[Reference](reference/constants.md)__
+-   :material-book-open-variant:{ .lg .middle } __[API Reference](api/index.md)__
 
-    ---
-
-    Constants, models, and API reference
+    Complete auto-generated API documentation
 
 </div>
