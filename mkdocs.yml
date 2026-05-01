@@ -10,6 +10,14 @@ nav:
   - Tasks:
       - Get positions: tasks/get-positions.md
       - Get candles: tasks/get-candles.md
+      - Get account info: tasks/get-account-info.md
+      - Get symbols: tasks/get-symbols.md
+      - Get ticks: tasks/get-ticks.md
+      - Get history: tasks/get-history.md
+      - Place orders: tasks/place-orders.md
+      - Market book: tasks/market-book.md
       - Handle errors: tasks/handle-errors.md
+  - Reference:
+      - Constants: reference/constants.md
 plugins:
   - search

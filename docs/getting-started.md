@@ -1,5 +1,11 @@
 # Quickstart
 
+## Prerequisites
+
+- **MetaTrader 5 terminal** must be installed on your system
+- **Windows only** (MT5 Python API is Windows-specific)
+- Valid MT5 account credentials (demo or live)
+
 ## Install
 
 ```bash
@@ -15,8 +21,16 @@ from syntiq_mt5 import LoginCredential, MetaTrader5Client
 creds = LoginCredential(login=12345678, password=SecretStr("your-password"), server="Broker-Demo")
 
 with MetaTrader5Client() as mt5:
-    mt5.initialize(creds)
-    mt5.login(creds)
+    init_res = mt5.initialize(creds)
+    if not init_res.success:
+        print(f"Initialize failed: {init_res.error_message}")
+        exit(1)
+    
+    login_res = mt5.login(creds)
+    if not login_res.success:
+        print(f"Login failed: {login_res.error_message}")
+        exit(1)
+    
     positions = mt5.positions()
 
 if positions.success:

@@ -6,7 +6,9 @@ Every client call returns `Result[T]`.
 - On failure: `success=False`, error code/message/context are set.
 
 ```python
-res = mt5.get_candles("EURUSD", timeframe=1, count=10)
+from syntiq_mt5 import constants
+
+res = mt5.get_candles("EURUSD", timeframe=constants.TIMEFRAME_M1, count=10)
 if res.success:
     print(len(res.data))
 else:

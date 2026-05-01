@@ -3,7 +3,9 @@
 Fetch recent candles for a symbol.
 
 ```python
-res = mt5.get_candles("EURUSD", timeframe=1, count=50)
+from syntiq_mt5 import constants
+
+res = mt5.get_candles("EURUSD", timeframe=constants.TIMEFRAME_M1, count=50)
 if res.success:
     print("candles:", len(res.data))
 else:
