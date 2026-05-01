@@ -7,6 +7,12 @@ from syntiq_mt5.terminal.models import TerminalInfo
 
 
 class TerminalService:
+    """Retrieves terminal state and configuration from MT5.
+
+    Wraps ``mt5.terminal_info()`` via ``call_mt5``, parses the raw
+    ``TerminalInfo`` struct into a typed model, and returns
+    ``Result[TerminalInfo]``.
+    """
     def terminal_info(self) -> Result[TerminalInfo]:
         raw = call_mt5(mt5.terminal_info)
         if raw.data is None:

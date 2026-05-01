@@ -7,6 +7,13 @@ from syntiq_mt5.market_book.models import BookEntry
 
 
 class MarketBookService:
+    """Manages market depth (DOM) subscriptions and snapshots for the MT5 terminal.
+
+    Wraps ``mt5.market_book_add()``, ``mt5.market_book_get()``, and
+    ``mt5.market_book_release()`` via ``call_mt5``, parses raw
+    ``BookInfo`` structs into ``BookEntry`` models, and returns
+    ``Result[T]``.
+    """
     def market_book_add(self, symbol: str) -> Result[bool]:
         raw = call_mt5(mt5.market_book_add, symbol)
         if raw.data is None:

@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+from syntiq_mt5._core.pricing import calculate_pip_size
+
 
 class SymbolInfo(BaseModel):
     custom: bool
@@ -101,8 +103,8 @@ class SymbolInfo(BaseModel):
 
     @property
     def pip_size(self) -> float:
-        """Calculate pip size based on digits."""
-        return self.point * 10 if self.digits in (3, 5) else self.point
+        """Pip size in price units. Accounts for fractional-pip (3/5-digit) symbols."""
+        return calculate_pip_size(self.digits, self.point)
 
     @property
     def spread_pips(self) -> float:

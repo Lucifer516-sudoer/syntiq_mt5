@@ -10,6 +10,13 @@ from syntiq_mt5.orders.models import HistoricalOrder
 
 
 class HistoryService:
+    """Retrieves historical orders and deals from the MT5 trade history.
+
+    Wraps ``mt5.history_orders_total()``, ``mt5.history_orders_get()``,
+    ``mt5.history_deals_total()``, and ``mt5.history_deals_get()`` via
+    ``call_mt5``, parses raw structs into ``HistoricalOrder`` and ``Deal``
+    models, and returns ``Result[T]``.
+    """
     def history_orders_total(self, date_from: datetime, date_to: datetime) -> Result[int]:
         raw = call_mt5(mt5.history_orders_total, date_from, date_to)
         if raw.data is None:

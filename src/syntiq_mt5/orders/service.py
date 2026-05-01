@@ -7,6 +7,13 @@ from syntiq_mt5.orders.models import Order, TradeRequest, TradeResult
 
 
 class OrderService:
+    """Manages active orders and trade execution for the MT5 terminal.
+
+    Wraps the MT5 order API (``orders_total``, ``orders_get``,
+    ``order_calc_margin``, ``order_calc_profit``, ``order_check``,
+    ``order_send``) via ``call_mt5``, parses raw structs into ``Order``
+    and ``TradeResult`` models, and returns ``Result[T]``.
+    """
     def orders_total(self) -> Result[int]:
         raw = call_mt5(mt5.orders_total)
         if raw.data is None:

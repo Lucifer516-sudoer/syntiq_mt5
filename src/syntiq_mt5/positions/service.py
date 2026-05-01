@@ -1,3 +1,5 @@
+"""Position retrieval service."""
+
 from __future__ import annotations
 
 from syntiq_mt5._core.execution import Result
@@ -7,10 +9,31 @@ from syntiq_mt5.positions.models import Position
 
 
 class PositionService:
+    """Retrieves open positions from the MT5 terminal.
+
+    Maintains an internal cache of ``(digits, point)`` pairs per symbol so
+    that ``symbol_info()`` is only called once per unique symbol across
+    repeated ``positions()`` calls within the same service instance.
+    """
+
     def __init__(self) -> None:
         self._symbol_cache: dict[str, tuple[int, float]] = {}
 
     def positions(self, symbol: str | None = None) -> Result[list[Position]]:
+        """Retrieve all open positions, optionally filtered by symbol.
+
+        Fetches ``(digits, point)`` from ``mt5.symbol_info()`` for each
+        unique symbol in the result set (using the cache to avoid redundant
+        calls) and attaches them to each ``Position`` for pip calculations.
+
+        Args:
+            symbol: If provided, only positions for this symbol are returned.
+
+        Returns:
+            ``Result[list[Position]]``: The list of open positions on success
+            (may be empty), or a failure result if the MT5 call fails or the
+            payload cannot be parsed.
+        """
         raw = call_mt5(mt5.positions_get, symbol=symbol) if symbol else call_mt5(mt5.positions_get)
         if raw.data is None:
             return Result.fail(raw.error, context="positions_get", operation="positions_get")
@@ -63,6 +86,12 @@ class PositionService:
         return Result.ok(parsed, context="positions_get", operation="positions_get")
 
     def positions_total(self) -> Result[int]:
+        """Return the total number of open positions.
+
+        Returns:
+            ``Result[int]``: The count of open positions on success, or a
+            failure result if the MT5 call fails.
+        """
         raw = call_mt5(mt5.positions_total)
         if raw.data is None:
             return Result.fail(raw.error, context="positions_total", operation="positions_total")

@@ -7,6 +7,13 @@ from syntiq_mt5.symbols.models import SymbolInfo, SymbolTick
 
 
 class SymbolService:
+    """Retrieves symbol metadata and tick data from the MT5 terminal.
+
+    Wraps ``mt5.symbols_total()``, ``mt5.symbols_get()``,
+    ``mt5.symbol_select()``, ``mt5.symbol_info()``, and
+    ``mt5.symbol_info_tick()`` via ``call_mt5``, parses the raw structs
+    into ``SymbolInfo`` / ``SymbolTick`` models, and returns ``Result[T]``.
+    """
     def symbols_total(self) -> Result[int]:
         raw = call_mt5(mt5.symbols_total)
         if raw.data is None:

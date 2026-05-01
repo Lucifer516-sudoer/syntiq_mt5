@@ -9,6 +9,13 @@ from syntiq_mt5.ticks.models import Tick
 
 
 class TickService:
+    """Retrieves tick data from the MT5 terminal.
+
+    Wraps ``mt5.copy_ticks_from()`` and ``mt5.copy_ticks_range()`` via
+    ``call_mt5``, parses the raw tick structs (which may arrive as either
+    attribute-bearing objects or plain dicts depending on the MT5 build)
+    into ``Tick`` models, and returns ``Result[list[Tick]]``.
+    """
     def copy_ticks_from(
         self, symbol: str, date_from: datetime, count: int, flags: int
     ) -> Result[list[Tick]]:

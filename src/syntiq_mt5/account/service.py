@@ -7,6 +7,12 @@ from syntiq_mt5.account.models import AccountInfo
 
 
 class AccountService:
+    """Retrieves trading account information from the MT5 terminal.
+
+    Wraps ``mt5.account_info()`` via ``call_mt5``, parses the raw
+    ``AccountInfo`` struct into a typed model, and returns
+    ``Result[AccountInfo]``.
+    """
     def account_info(self) -> Result[AccountInfo]:
         raw = call_mt5(mt5.account_info)
         if raw.data is None:
