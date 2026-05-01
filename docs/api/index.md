@@ -10,73 +10,73 @@ The syntiq-mt5 API is organized into focused modules:
 
 <div class="grid cards" markdown>
 
--   :material-application:{ .lg .middle } __[Client](client.md)__
+-   :material-application: __[Client](client.md)__
 
     ---
 
     Main entry point — `MetaTrader5Client` with all operations
 
--   :material-account-cash:{ .lg .middle } __[Account](account.md)__
+-   :material-account-cash: __[Account](account.md)__
 
     ---
 
     Account information models and services
 
--   :material-chart-line:{ .lg .middle } __[Positions](positions.md)__
+-   :material-chart-line: __[Positions](positions.md)__
 
     ---
 
     Open position models and retrieval
 
--   :material-candlestick:{ .lg .middle } __[Market](market.md)__
+-   :material-candlestick: __[Market](market.md)__
 
     ---
 
     Candles, rates, and market data
 
--   :material-cash-multiple:{ .lg .middle } __[Orders](orders.md)__
+-   :material-cash-multiple: __[Orders](orders.md)__
 
     ---
 
     Order placement, validation, and management
 
--   :material-history:{ .lg .middle } __[History](history.md)__
+-   :material-history: __[History](history.md)__
 
     ---
 
     Historical orders and deals
 
--   :material-currency-usd:{ .lg .middle } __[Symbols](symbols.md)__
+-   :material-currency-usd: __[Symbols](symbols.md)__
 
     ---
 
     Symbol information and specifications
 
--   :material-chart-scatter-plot:{ .lg .middle } __[Ticks](ticks.md)__
+-   :material-chart-scatter-plot: __[Ticks](ticks.md)__
 
     ---
 
     Raw tick data retrieval
 
--   :material-monitor:{ .lg .middle } __[Terminal](terminal.md)__
+-   :material-monitor: __[Terminal](terminal.md)__
 
     ---
 
     Terminal state and configuration
 
--   :material-book-open:{ .lg .middle } __[Market Book](market-book.md)__
+-   :material-book-open: __[Market Book](market-book.md)__
 
     ---
 
     Level 2 order book data
 
--   :material-connection:{ .lg .middle } __[Connection](connection.md)__
+-   :material-connection: __[Connection](connection.md)__
 
     ---
 
     Connection lifecycle and credentials
 
--   :material-cog:{ .lg .middle } __[Core](core.md)__
+-   :material-cog: __[Core](core.md)__
 
     ---
 

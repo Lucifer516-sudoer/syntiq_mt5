@@ -12,7 +12,7 @@ Every syntiq-mt5 session follows the same lifecycle, every operation returns the
 
 <div class="grid cards" markdown>
 
--   :material-timeline-clock:{ .lg .middle } __[Lifecycle](lifecycle.md)__
+-   :material-timeline-clock: __[Lifecycle](lifecycle.md)__
 
     ---
 
@@ -20,7 +20,7 @@ Every syntiq-mt5 session follows the same lifecycle, every operation returns the
 
     Common mistakes and how to avoid them
 
--   :material-check-decagram:{ .lg .middle } __[Result\[T\]](results.md)__
+-   :material-check-decagram: __[Result\[T\]](results.md)__
 
     ---
 
@@ -28,7 +28,7 @@ Every syntiq-mt5 session follows the same lifecycle, every operation returns the
 
     No exceptions, no surprises
 
--   :material-alert-circle:{ .lg .middle } __[Error Handling](error-handling.md)__
+-   :material-alert-circle: __[Error Handling](error-handling.md)__
 
     ---
 

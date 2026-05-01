@@ -25,19 +25,19 @@ The raw `MetaTrader5` Python package returns untyped structs, stores errors in g
 
 <div class="grid cards" markdown>
 
--   :material-check-circle:{ .lg .middle } __Typed Models__
+-   :material-check-circle: __Typed Models__
 
     Pydantic v2 models with full IDE completion. No more guessing field names or types.
 
--   :material-shield-check:{ .lg .middle } __No Exceptions__
+-   :material-shield-check: __No Exceptions__
 
     Every operation returns `Result[T]`. Handle success and failure explicitly — no surprises.
 
--   :material-code-tags:{ .lg .middle } __Named Constants__
+-   :material-code-tags: __Named Constants__
 
     Use `ORDER_TYPE_BUY` instead of `0`. Use `TIMEFRAME_H1` instead of `16385`. Self-documenting code.
 
--   :material-connection:{ .lg .middle } __Automatic Cleanup__
+-   :material-connection: __Automatic Cleanup__
 
     Context manager support. `shutdown()` is called automatically — even on exceptions.
 
@@ -130,19 +130,19 @@ pip install syntiq-mt5
 
 <div class="grid cards" markdown>
 
--   :material-rocket-launch:{ .lg .middle } __[Quickstart](getting-started.md)__
+-   :material-rocket-launch: __[Quickstart](getting-started.md)__
 
     Full working example in under 60 seconds
 
--   :material-chart-timeline:{ .lg .middle } __[Core Concepts](core/lifecycle.md)__
+-   :material-chart-timeline: __[Core Concepts](core/lifecycle.md)__
 
     Understand `initialize → login → use → shutdown`
 
--   :material-code-braces:{ .lg .middle } __[Tasks](tasks/get-positions.md)__
+-   :material-code-braces: __[Tasks](tasks/get-positions.md)__
 
     Copy-paste recipes for every operation
 
--   :material-book-open-variant:{ .lg .middle } __[API Reference](api/index.md)__
+-   :material-book-open-variant: __[API Reference](api/index.md)__
 
     Complete auto-generated API documentation
 

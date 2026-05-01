@@ -60,7 +60,7 @@ with MetaTrader5Client() as mt5:
 
 ## Step by step
 
-### :material-numeric-1-circle:{ .lg .middle } `initialize(creds)`
+### :material-numeric-1-circle: `initialize(creds)`
 
 Connects to the MT5 terminal process on your machine. The terminal must already be running.
 
@@ -75,7 +75,7 @@ Connects to the MT5 terminal process on your machine. The terminal must already 
 3. If found, establishes IPC connection
 4. Returns success/failure
 
-### :material-numeric-2-circle:{ .lg .middle } `login(creds)`
+### :material-numeric-2-circle: `login(creds)`
 
 Authenticates with the broker server using your account number, password, and server name.
 
@@ -89,11 +89,11 @@ Authenticates with the broker server using your account number, password, and se
 3. Broker validates credentials and returns session token
 4. Returns success/failure
 
-### :material-numeric-3-circle:{ .lg .middle } Use the client
+### :material-numeric-3-circle: Use the client
 
 All data and trading operations are available after a successful login. See the [Tasks](../tasks/get-positions.md) section for copy-paste examples.
 
-### :material-numeric-4-circle:{ .lg .middle } `shutdown()`
+### :material-numeric-4-circle: `shutdown()`
 
 Disconnects from the terminal. Called automatically when the `with` block exits — even if an exception occurs.
 

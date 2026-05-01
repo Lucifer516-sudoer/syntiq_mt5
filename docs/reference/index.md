@@ -6,7 +6,7 @@ Complete API reference for constants, models, and types.
 
 <div class="grid cards" markdown>
 
--   :material-code-braces:{ .lg .middle } __[Constants](constants.md)__
+-   :material-code-braces: __[Constants](constants.md)__
 
     ---
 
@@ -14,7 +14,7 @@ Complete API reference for constants, models, and types.
 
     Never use raw integers
 
--   :material-package-variant:{ .lg .middle } __[Models](models.md)__
+-   :material-package-variant: __[Models](models.md)__
 
     ---
 

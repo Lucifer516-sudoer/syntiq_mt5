@@ -224,25 +224,25 @@ with MetaTrader5Client() as mt5:
 
 <div class="grid cards" markdown>
 
--   :material-timeline-clock:{ .lg .middle } __[Lifecycle](core/lifecycle.md)__
+-   :material-timeline-clock: __[Lifecycle](core/lifecycle.md)__
 
     ---
 
     Common mistakes and the full connection flow
 
--   :material-check-decagram:{ .lg .middle } __[Result\[T\]](core/results.md)__
+-   :material-check-decagram: __[Result\[T\]](core/results.md)__
 
     ---
 
     How to handle success and failure
 
--   :material-candlestick:{ .lg .middle } __[Get Candles](tasks/get-candles.md)__
+-   :material-candlestick: __[Get Candles](tasks/get-candles.md)__
 
     ---
 
     Fetch OHLCV price data
 
--   :material-cash-multiple:{ .lg .middle } __[Place Orders](tasks/place-orders.md)__
+-   :material-cash-multiple: __[Place Orders](tasks/place-orders.md)__
 
     ---
 
