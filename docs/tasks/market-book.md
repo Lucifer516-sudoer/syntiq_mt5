@@ -70,3 +70,89 @@ if res.success:
 
 !!! note
     Market book data is not available for all symbols or brokers. `market_book_add()` returns `data=False` when the symbol does not support DOM. Always check `add.data` before calling `market_book_get()`.
+
+---
+
+## Failure examples
+
+### Example 1: Market book not supported
+
+```python
+add = mt5.market_book_add("EURUSD")
+
+if not add.success:
+    print(f"Error: {add.error_message}")
+elif not add.data:
+    print("Market book not available for this symbol")
+```
+
+**Output:**
+```text
+Market book not available for this symbol
+```
+
+**Why:** Most Forex brokers don't provide Level 2 data. Market book is typically available only for exchange-traded instruments (stocks, futures).
+
+---
+
+### Example 2: Symbol not in Market Watch
+
+```python
+add = mt5.market_book_add("BTCUSD")
+
+if not add.success:
+    print(f"Failed: {add.error_message}")
+    
+    # Enable symbol first
+    mt5.symbol_select("BTCUSD", True)
+    
+    # Retry
+    add = mt5.market_book_add("BTCUSD")
+```
+
+---
+
+### Example 3: Empty book
+
+```python
+add = mt5.market_book_add("EURUSD")
+
+if add.success and add.data:
+    res = mt5.market_book_get("EURUSD")
+    
+    if res.success:
+        if not res.data:
+            print("Book is empty (no orders at this moment)")
+        else:
+            print(f"Book has {len(res.data)} entries")
+```
+
+**Note:** Even when market book is supported, it can be temporarily empty.
+
+---
+
+## Practical notes
+
+!!! warning "Always release subscriptions"
+    ```python
+    try:
+        add = mt5.market_book_add("EURUSD")
+        if add.success and add.data:
+            # Use the book
+            res = mt5.market_book_get("EURUSD")
+    finally:
+        # Always release, even on error
+        mt5.market_book_release("EURUSD")
+    ```
+
+!!! tip "Check broker support first"
+    Most retail Forex brokers don't provide DOM data. Check with your broker's documentation before relying on market book functionality.
+
+!!! info "Real-time updates"
+    `market_book_get()` returns a snapshot. For real-time updates, you need to poll it repeatedly or use MT5's event system (not exposed in this SDK).
+
+!!! note "Volume interpretation"
+    - `volume`: Integer lots (legacy field)
+    - `volume_real`: Fractional lots (use this for accurate volume)
+    
+    Always use `volume_real` for calculations.

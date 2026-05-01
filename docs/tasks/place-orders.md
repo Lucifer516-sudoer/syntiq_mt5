@@ -144,3 +144,134 @@ else:
 ```
 
 See [Error Handling](../core/error-handling.md) and [Constants → Trade Return Codes](../reference/constants.md#trade-return-codes) for retcode details.
+
+---
+
+## Failure examples
+
+### Example 1: Insufficient margin
+
+```python
+request = TradeRequest(
+    action=constants.TRADE_ACTION_DEAL,
+    symbol="EURUSD",
+    volume=10.0,  # ❌ Too large for account
+    type=constants.ORDER_TYPE_BUY,
+    price=1.08500,
+)
+
+check = mt5.order_check(request)
+if check.success and not check.data.is_successful:
+    print(f"Validation failed: {check.data.comment}")
+    print(f"Retcode: {check.data.retcode}")
+```
+
+**Output:**
+```text
+Validation failed: Not enough money
+Retcode: 10019
+```
+
+**Fix:** Calculate required margin first using `order_calc_margin()` and check against `account_info().margin_free`.
+
+---
+
+### Example 2: Invalid volume
+
+```python
+request = TradeRequest(
+    action=constants.TRADE_ACTION_DEAL,
+    symbol="EURUSD",
+    volume=0.001,  # ❌ Below minimum
+    type=constants.ORDER_TYPE_BUY,
+    price=1.08500,
+)
+
+res = mt5.order_send(request)
+if res.success and not res.data.is_successful:
+    print(f"Rejected: {res.data.comment}")
+```
+
+**Output:**
+```text
+Rejected: Invalid volume
+```
+
+**Fix:** Check `symbol_info("EURUSD").volume_min` and `volume_step` before placing orders.
+
+---
+
+### Example 3: Invalid stops (too close)
+
+```python
+request = TradeRequest(
+    action=constants.TRADE_ACTION_DEAL,
+    symbol="EURUSD",
+    volume=0.10,
+    type=constants.ORDER_TYPE_BUY,
+    price=1.08500,
+    sl=1.08490,  # ❌ Only 1 pip away
+    tp=1.09000,
+)
+
+res = mt5.order_send(request)
+if res.success and not res.data.is_successful:
+    print(f"Rejected: {res.data.comment}")
+```
+
+**Output:**
+```text
+Rejected: Invalid stops
+```
+
+**Fix:** Check `symbol_info("EURUSD").trade_stops_level` for minimum distance in points.
+
+---
+
+### Example 4: Market closed
+
+```python
+from datetime import datetime, timezone
+
+# Trying to trade on Sunday
+request = TradeRequest(
+    action=constants.TRADE_ACTION_DEAL,
+    symbol="EURUSD",
+    volume=0.10,
+    type=constants.ORDER_TYPE_BUY,
+    price=1.08500,
+)
+
+res = mt5.order_send(request)
+if res.success and not res.data.is_successful:
+    print(f"Rejected: {res.data.comment}")
+    print(f"Retcode: {res.data.retcode}")
+```
+
+**Output:**
+```text
+Rejected: Market is closed
+Retcode: 10018
+```
+
+**Fix:** Check `terminal_info().trade_allowed` and symbol trading sessions before placing orders.
+
+---
+
+## Practical notes
+
+!!! tip "Always validate before sending"
+    Use `order_check()` before `order_send()` to catch validation errors without consuming a trade request. This is especially important for automated systems.
+
+!!! warning "Handle requotes"
+    When `retcode == TRADE_RETCODE_REQUOTE`, the price has moved. The new price is in `res.data.ask` or `res.data.bid`. Update your request and retry.
+
+!!! info "Deviation parameter"
+    `deviation` allows the broker to execute at a slightly different price (in points). Set it to `0` for strict price execution, or `10-20` for more flexibility in fast markets.
+
+!!! note "Fill policies"
+    - `ORDER_FILLING_FOK` (Fill or Kill): Execute the entire volume immediately or reject
+    - `ORDER_FILLING_IOC` (Immediate or Cancel): Execute partial volume, cancel the rest
+    - `ORDER_FILLING_RETURN`: Used for exchange instruments
+    
+    Most Forex brokers require `FOK`. Check `symbol_info().filling_mode` to see what's supported.

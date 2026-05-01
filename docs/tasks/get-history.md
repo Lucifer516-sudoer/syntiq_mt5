@@ -121,3 +121,118 @@ if res.success:
     total_net = sum(d.net_profit for d in trade_deals)
     print(f"Net P&L: {total_net:.2f}")
 ```
+
+---
+
+## Failure examples
+
+### Example 1: No history available
+
+```python
+from datetime import datetime, timezone
+
+date_from = datetime(2024, 1, 1, tzinfo=timezone.utc)
+date_to = datetime(2024, 1, 31, tzinfo=timezone.utc)
+
+res = mt5.history_deals_get(date_from, date_to)
+
+if res.success:
+    if not res.data:
+        print("No deals in this period")
+    else:
+        print(f"Found {len(res.data)} deals")
+```
+
+**Output:**
+```text
+No deals in this period
+```
+
+**Note:** `success=True` with empty `data` means the operation worked, but no deals exist for that date range.
+
+---
+
+### Example 2: Invalid position ticket
+
+```python
+res = mt5.history_deals_get(position=999999999)
+
+if res.success:
+    if not res.data:
+        print("No deals found for this position (invalid ticket or no history)")
+```
+
+**Why:** The position ticket doesn't exist, or the position has no associated deals in the history.
+
+---
+
+### Example 3: Date range too large
+
+```python
+# Trying to fetch 5 years of history
+date_from = datetime(2019, 1, 1, tzinfo=timezone.utc)
+date_to = datetime(2024, 1, 1, tzinfo=timezone.utc)
+
+res = mt5.history_deals_get(date_from, date_to)
+
+if res.success:
+    print(f"Deals: {len(res.data)}")
+    # This might be slow or hit broker limits
+```
+
+**Fix:** Fetch history in smaller chunks (e.g., monthly) to avoid timeouts and memory issues.
+
+---
+
+## Practical notes
+
+!!! tip "Filter trade deals only"
+    History includes non-trade deals (balance adjustments, commissions, etc.). Filter for actual trades:
+    ```python
+    res = mt5.history_deals_get(date_from, date_to)
+    
+    if res.success:
+        trade_deals = [d for d in res.data if d.is_buy or d.is_sell]
+        print(f"Trade deals: {len(trade_deals)}")
+    ```
+
+!!! warning "Commission and swap"
+    `profit` is gross P&L. Use `net_profit` for actual profit after fees:
+    ```python
+    deal = res.data[0]
+    print(f"Gross: {deal.profit:.2f}")
+    print(f"Commission: {deal.commission:.2f}")
+    print(f"Swap: {deal.swap:.2f}")
+    print(f"Net: {deal.net_profit:.2f}")
+    ```
+
+!!! info "Entry vs exit deals"
+    - `is_entry` — Deal opened a position
+    - `is_exit` — Deal closed a position
+    
+    Use these to separate opening and closing trades:
+    ```python
+    entries = [d for d in res.data if d.is_entry]
+    exits = [d for d in res.data if d.is_exit]
+    ```
+
+!!! note "Historical orders vs deals"
+    - **Orders** — Trade requests (can be pending, filled, canceled)
+    - **Deals** — Actual executions (always filled)
+    
+    Use `history_deals_get()` for P&L analysis, `history_orders_get()` for order flow analysis.
+
+!!! tip "Calculate win rate"
+    ```python
+    res = mt5.history_deals_get(date_from, date_to)
+    
+    if res.success:
+        trade_deals = [d for d in res.data if d.is_exit]
+        wins = [d for d in trade_deals if d.net_profit > 0]
+        losses = [d for d in trade_deals if d.net_profit < 0]
+        
+        win_rate = len(wins) / len(trade_deals) * 100 if trade_deals else 0
+        print(f"Win rate: {win_rate:.1f}%")
+        print(f"Wins: {len(wins)}  Losses: {len(losses)}")
+    ```
+```

@@ -56,6 +56,28 @@ theme:
 plugins:
   - search:
       separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
+  - mkdocstrings:
+      handlers:
+        python:
+          import:
+            - https://docs.python.org/3/objects.inv
+          paths: [src]
+          options:
+            docstring_style: google
+            docstring_section_style: spacy
+            show_root_heading: true
+            show_root_full_path: false
+            show_source: false
+            members_order: source
+            heading_level: 2
+            show_signature_annotations: true
+            separate_signature: true
+            merge_init_into_class: true
+            show_if_no_docstring: false
+            filters:
+              - "!^_"  # Exclude private members by default
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
 
 markdown_extensions:
   # Admonitions
@@ -114,13 +136,13 @@ extra:
 
 nav:
   - Home: index.md
-  - Quickstart: getting-started.md
-  - Core Concepts:
+  - 🚀 Quickstart: getting-started.md
+  - 🧠 Core Concepts:
       - core/index.md
       - Lifecycle: core/lifecycle.md
       - Result[T]: core/results.md
       - Error Handling: core/error-handling.md
-  - Tasks:
+  - 📋 Tasks:
       - tasks/index.md
       - Get Positions: tasks/get-positions.md
       - Get Candles: tasks/get-candles.md
@@ -131,7 +153,21 @@ nav:
       - Market Book: tasks/market-book.md
       - Get Account Info: tasks/get-account-info.md
       - Handle Errors: tasks/handle-errors.md
-  - Reference:
+  - 📚 Reference:
       - reference/index.md
       - Constants: reference/constants.md
       - Models: reference/models.md
+  - 🔌 API:
+      - api/index.md
+      - Client: api/client.md
+      - Account: api/account.md
+      - Positions: api/positions.md
+      - Market: api/market.md
+      - Orders: api/orders.md
+      - History: api/history.md
+      - Symbols: api/symbols.md
+      - Ticks: api/ticks.md
+      - Terminal: api/terminal.md
+      - Market Book: api/market-book.md
+      - Connection: api/connection.md
+      - Core: api/core.md

@@ -6,9 +6,76 @@
 
 ## How MT5 errors work
 
-The raw `MetaTrader5` library stores the last error in global state. After every call you must manually call `mt5.last_error()` to retrieve it — and if you forget, the error is lost.
+The raw `MetaTrader5` library has a critical design flaw: it stores the last error in **global mutable state**.
 
-`syntiq-mt5` captures `last_error()` immediately after every operation and attaches it to the returned `Result`. You never need to call `last_error()` yourself.
+### The problem with `last_error()`
+
+```python
+import MetaTrader5 as mt5
+
+# Call 1: fails
+mt5.symbol_info("INVALID")
+
+# Call 2: succeeds
+mt5.symbol_info("EURUSD")
+
+# Now check the error
+error = mt5.last_error()
+print(error)  # (1, 'Success') ❌ The real error is gone!
+```
+
+**What went wrong:**
+1. First call fails → MT5 stores error code `4301` ("Symbol not found")
+2. Second call succeeds → MT5 **overwrites** the error with `(1, 'Success')`
+3. When you check `last_error()`, you get the wrong result
+
+### Why this is dangerous
+
+```python
+# ❌ WRONG: Error is lost
+res1 = mt5.symbol_info("INVALID")  # Fails
+res2 = mt5.symbol_info("EURUSD")   # Succeeds
+error = mt5.last_error()           # Returns success!
+
+# ❌ WRONG: Race condition in concurrent code
+res = mt5.positions()
+# Another thread calls mt5.account_info() here
+error = mt5.last_error()  # Wrong error!
+
+# ❌ WRONG: Forgot to check immediately
+res = mt5.positions()
+do_some_processing()
+error = mt5.last_error()  # Might be overwritten
+```
+
+### How syntiq-mt5 solves this
+
+`syntiq-mt5` captures `last_error()` **immediately** after every operation and attaches it to the returned `Result`. The error is bound to the operation that produced it.
+
+```python
+from syntiq_mt5 import MetaTrader5Client
+
+mt5 = MetaTrader5Client()
+
+# Each Result carries its own error
+res1 = mt5.symbol_info("INVALID")   # res1.error_code = 4301
+res2 = mt5.symbol_info("EURUSD")    # res2.error_code = None
+
+# Errors are preserved
+print(res1.error_code)     # 4301 ✅
+print(res1.error_message)  # "Symbol not found" ✅
+print(res2.success)        # True ✅
+```
+
+**Benefits:**
+- ✅ No race conditions
+- ✅ No lost errors
+- ✅ No manual `last_error()` calls
+- ✅ Errors are immutable and bound to their operation
+- ✅ Safe in concurrent code (each Result is independent)
+
+!!! success "You never need to call `last_error()` yourself"
+    The SDK handles it automatically. Every `Result` contains the error that occurred during that specific operation.
 
 ---
 

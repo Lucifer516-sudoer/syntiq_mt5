@@ -40,3 +40,13 @@ packages = ["src/syntiq_mt5"]
 
 [tool.hatch.build.targets.sdist]
 include = ["src/syntiq_mt5", "README.md", "LICENSE", "CHANGELOG.md", "pyproject.toml"]
+
+[dependency-groups]
+dev = [
+    "mkdocs>=1.6.1,<2",
+    "mkdocs-material>=9.7.6,<10",
+    "mkdocstrings[python]>=1.0.4",
+    "mypy>=1.20.1",
+    "pytest>=9.0.1",
+    "ruff>=0.15.11",
+]
