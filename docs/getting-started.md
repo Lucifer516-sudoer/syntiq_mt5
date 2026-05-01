@@ -236,7 +236,7 @@ with MetaTrader5Client() as mt5:
 
     How to handle success and failure
 
--   :material-candlestick: __[Get Candles](tasks/get-candles.md)__
+-   🕯️ __[Get Candles](tasks/get-candles.md)__
 
     ---
 
