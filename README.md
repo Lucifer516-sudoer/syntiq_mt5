@@ -2,7 +2,7 @@
 
 A typed, testable Python interface for MetaTrader 5.
 
-[Documentation](https://lucifer516-sudoer.github.io/syntiq_mt5/) | [Changelog](CHANGELOG.md) | [Contributing](CONTRIBUTING.md)
+[Documentation](https://lucifer516-sudoer.github.io/syntiq_mt5/) | [Changelog](https://github.com/Lucifer516-sudoer/syntiq_mt5/blob/main/CHANGELOG.md) | [Contributing](https://github.com/Lucifer516-sudoer/syntiq_mt5/blob/main/CONTRIBUTING.md)
 
 > Project status: alpha. Validate every trading workflow against a demo account before using it with live funds.
 
@@ -43,7 +43,7 @@ import os
 
 from pydantic import SecretStr
 
-from syntiq_mt5 import LoginCredential, MT5
+from syntiq_mt5 import LoginCredential, SyntiqMT5
 
 credentials = LoginCredential(
     login=int(os.environ["MT5_LOGIN"]),
@@ -51,7 +51,7 @@ credentials = LoginCredential(
     server=os.environ["MT5_SERVER"],
 )
 
-with MT5(credentials) as mt5:
+with SyntiqMT5(credentials) as mt5:
     account = mt5.account_info()
     positions = mt5.positions()
     print(account.login, account.balance, len(positions))
@@ -61,13 +61,21 @@ The context manager initializes and authenticates in one native call and always
 shuts down. A second active session in the same process is rejected because the
 underlying extension is process-global.
 
+`SyntiqMT5` is the canonical public class. `MT5` is provided as a concise alias:
+
+```python
+from syntiq_mt5 import MT5, SyntiqMT5
+
+assert MT5 is SyntiqMT5
+```
+
 ## Errors
 
 ```python
-from syntiq_mt5 import MT5, MT5Error
+from syntiq_mt5 import MT5Error, SyntiqMT5
 
 try:
-    with MT5() as mt5:
+    with SyntiqMT5() as mt5:
         quote = mt5.symbol_info_tick("UNKNOWN")
 except MT5Error as error:
     print(error.operation, error.code, error.message)
@@ -80,9 +88,9 @@ inspect `retcode`, `comment`, and acceptance status.
 ## Safe candles
 
 ```python
-from syntiq_mt5 import MT5, constants
+from syntiq_mt5 import SyntiqMT5, constants
 
-with MT5() as mt5:
+with SyntiqMT5() as mt5:
     # Position 0 is the still-forming bar, so it is excluded by default.
     candles = mt5.candles("EURUSD", constants.TIMEFRAME_H1, count=100)
 ```
@@ -91,12 +99,12 @@ with MT5() as mt5:
 
 ```bash
 uv sync --locked --all-groups
-uv run ruff format src tests examples
-uv run ruff check src tests examples
+uv run ruff format src tests examples scripts
+uv run ruff check src tests examples scripts
 uv run mypy src
 uv run pytest
 uv run mkdocs build --strict
-uv build
+uv build --clear
 ```
 
 CI runs these checks on Linux and Windows with Python 3.12 and 3.13. Tagged

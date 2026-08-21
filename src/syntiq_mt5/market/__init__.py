@@ -1,4 +1,5 @@
-from syntiq_mt5.market.candles import Candle
-from syntiq_mt5.market.symbols import MarketService
+"""Market-rate models."""
 
-__all__ = ["Candle", "MarketService"]
+from syntiq_mt5.market.candles import Candle
+
+__all__ = ["Candle"]

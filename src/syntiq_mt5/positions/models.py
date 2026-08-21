@@ -1,12 +1,11 @@
 """Position model for open MT5 trading positions."""
 
-from pydantic import BaseModel
-
-from syntiq_mt5._core.pricing import calculate_pip_size
+from syntiq_mt5._internal.model import MT5Model
+from syntiq_mt5._internal.pricing import calculate_pip_size
 from syntiq_mt5.enums import PositionReason, PositionType
 
 
-class Position(BaseModel):
+class Position(MT5Model):
     """An open trading position in MetaTrader 5.
 
     Wraps the raw ``TradePosition`` struct returned by ``mt5.positions_get()``.
@@ -14,7 +13,7 @@ class Position(BaseModel):
     profit metrics that are commonly needed for position management.
 
     ``digits`` and ``point`` are not part of the MT5 position struct — they
-    are fetched from ``mt5.symbol_info()`` by ``PositionService`` and
+    are fetched from ``mt5.symbol_info()`` by :meth:`SyntiqMT5.positions` and
     attached here so that pip calculations are self-contained.
 
     Attributes:
@@ -39,6 +38,7 @@ class Position(BaseModel):
         external_id: Position identifier in an external system.
         digits: Number of decimal places for the symbol's price.
         point: Smallest price increment for the symbol.
+
     """
 
     ticket: int
@@ -92,6 +92,7 @@ class Position(BaseModel):
 
         Returns:
             Profit in pips relative to the open price.
+
         """
         direction = 1 if self.is_buy else -1
         return ((self.price_current - self.price_open) * direction) / self.pip_size
@@ -106,6 +107,7 @@ class Position(BaseModel):
 
         Returns:
             Distance to take profit in pips, or 0.0 if TP is not set.
+
         """
         if self.tp == 0:
             return 0.0

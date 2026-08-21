@@ -1,9 +1,9 @@
 """Account information model."""
 
-from pydantic import BaseModel
+from syntiq_mt5._internal.model import MT5Model
 
 
-class AccountInfo(BaseModel):
+class AccountInfo(MT5Model):
     """Trading account details from MetaTrader 5.
 
     Wraps the raw ``AccountInfo`` struct returned by ``mt5.account_info()``.
@@ -39,6 +39,7 @@ class AccountInfo(BaseModel):
         server: Broker server name.
         currency: Account currency code (e.g. ``"USD"``).
         company: Broker company name.
+
     """
 
     login: int
@@ -78,6 +79,7 @@ class AccountInfo(BaseModel):
 
         Returns:
             Margin usage percentage (0–100+).
+
         """
         if self.equity == 0:
             return 0.0
@@ -92,6 +94,7 @@ class AccountInfo(BaseModel):
 
         Returns:
             Equity / balance ratio.
+
         """
         if self.balance == 0:
             return 0.0

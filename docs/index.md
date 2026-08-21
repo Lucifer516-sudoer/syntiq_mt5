@@ -2,154 +2,75 @@
 hide:
   - navigation
   - toc
-search:
-  exclude: true
 ---
-
-<meta http-equiv="refresh" content="0; url=home/">
-
-The documentation home has moved to [the developer guide](home.md).
 
 <div class="hero" markdown>
 
 # syntiq-mt5
 
-### Production-grade MetaTrader 5 SDK for Python
+### MetaTrader 5, shaped for Python developers
 
-Typed. Reliable. Developer-first.
+Direct values. Typed failures. Managed global state.
 
-[Get Started](getting-started.md){ .md-button .md-button--primary }
-[View on GitHub](https://github.com/lucifer516-sudoer/syntiq-mt5){ .md-button .md-button--secondary }
+[Start in five minutes](quickstart.md){ .md-button .md-button--primary }
+[View on GitHub](https://github.com/Lucifer516-sudoer/syntiq_mt5){ .md-button }
 
 </div>
 
----
+## One session, one honest interface
 
-## Why syntiq-mt5?
-
-The raw `MetaTrader5` Python package returns untyped structs, stores errors in global state, and requires you to know integer constants by heart. **syntiq-mt5 fixes all of that.**
+The official MT5 extension is process-global and reports failures differently
+for different functions. This library does not pretend otherwise. One `MT5`
+session owns the terminal, serializes native calls with immediate error capture,
+and turns raw records into typed models.
 
 <div class="grid cards" markdown>
 
--   :material-check-circle: __Typed Models__
+- **Direct return values**
 
-    Pydantic v2 models with full IDE completion. No more guessing field names or types.
+    `positions()` returns `tuple[Position, ...]`. No wrapper and no optional data.
 
--   :material-shield-check: __No Exceptions__
+- **Typed failures**
 
-    Every operation returns `Result[T]`. Handle success and failure explicitly — no surprises.
+    Every `MT5Error` includes `operation`, `code`, and `message`.
 
--   :material-code-tags: __Named Constants__
+- **Correct trade responses**
 
-    Use `ORDER_TYPE_BUY` instead of `0`. Use `TIMEFRAME_H1` instead of `16385`. Self-documenting code.
+    Checks expose projected margin. Sends expose execution details. They are not
+    forced into one inaccurate model.
 
--   :material-connection: __Automatic Cleanup__
+- **Testable without Windows**
 
-    Context manager support. `shutdown()` is called automatically — even on exceptions.
+    Inject a fake adapter at the native seam and exercise the same public session.
 
 </div>
 
----
+```python
+from syntiq_mt5 import SyntiqMT5, constants
 
-## Raw MT5 vs syntiq-mt5
+with SyntiqMT5() as mt5:
+    quote = mt5.symbol_info_tick("EURUSD")
+    candles = mt5.candles("EURUSD", constants.TIMEFRAME_H1, 100)
+    positions = mt5.positions(symbol="EURUSD")
 
-| Raw MT5 | syntiq-mt5 |
-|---------|------------|
-| Untyped namedtuples | Pydantic models with IDE completion |
-| `mt5.last_error()` after every call | `result.error_code` / `result.error_message` |
-| Magic integers (`0`, `1`, `16385`) | Named constants (`ORDER_TYPE_BUY`, `TIMEFRAME_H1`) |
-| Raises on connection failure | Returns `Result.fail(...)` |
-| Manual `mt5.shutdown()` | Automatic via context manager |
-
----
-
-## Quick example
-
-=== "syntiq-mt5"
-
-    ```python
-    from pydantic import SecretStr
-    from syntiq_mt5 import LoginCredential, MetaTrader5Client, constants
-
-    creds = LoginCredential(
-        login=12345678,
-        password=SecretStr("your-password"),
-        server="Broker-Demo",
-    )
-
-    with MetaTrader5Client() as mt5:
-        mt5.initialize(creds)
-        mt5.login(creds)
-
-        res = mt5.positions()
-        if res.success:
-            for p in res.data:
-                print(f"{p.symbol}  {p.volume} lots  {p.pips_profit:+.1f} pips")
-    ```
-
-    ```text title="Output"
-    EURUSD  0.10 lots  +12.3 pips
-    GBPUSD  0.05 lots  -4.7 pips
-    ```
-
-=== "Raw MT5"
-
-    ```python
-    import MetaTrader5 as mt5
-
-    if not mt5.initialize():
-        print("initialize() failed")
-        quit()
-
-    if not mt5.login(12345678, password="your-password", server="Broker-Demo"):
-        print("login() failed, error code =", mt5.last_error())
-        mt5.shutdown()
-        quit()
-
-    positions = mt5.positions_get()
-    if positions is None:
-        print("No positions, error code =", mt5.last_error())
-    elif len(positions) > 0:
-        for p in positions:
-            # p is a namedtuple — no IDE completion, no type hints
-            print(p.symbol, p.volume, p.profit)
-
-    mt5.shutdown()
-    ```
-
----
-
-## Install
-
-```bash
-pip install syntiq-mt5
+print(quote.bid, quote.ask, len(candles), len(positions))
 ```
 
-!!! info "Requirements"
-    - **Windows** — the MT5 Python API is Windows-only
-    - **MetaTrader 5 terminal** installed ([download](https://www.metatrader5.com/en/download))
-    - **Python 3.12+**
+!!! warning "Alpha and trading risk"
+    The package is under active development. Test all order logic against a demo
+    account. `order_check()` is a pre-flight check, not a guarantee of execution.
 
----
+## Supported areas
 
-## What's next?
+| Area | Interface |
+| --- | --- |
+| Lifecycle | `initialize`, `login`, `shutdown`, context manager |
+| Terminal | `version`, `account_info`, `terminal_info` |
+| Market data | symbols, quotes, completed candles, rates, ticks |
+| Portfolio | positions and pending orders |
+| Trading | margin/profit calculation, check, send |
+| History | order and deal queries by UTC range, ticket, or position |
+| Market depth | managed subscription context and snapshots |
 
-<div class="grid cards" markdown>
-
--   :material-rocket-launch: __[Quickstart](getting-started.md)__
-
-    Full working example in under 60 seconds
-
--   :material-chart-timeline: __[Core Concepts](core/lifecycle.md)__
-
-    Understand `initialize → login → use → shutdown`
-
--   :material-code-braces: __[Tasks](tasks/get-positions.md)__
-
-    Copy-paste recipes for every operation
-
--   :material-book-open-variant: __[API Reference](api/index.md)__
-
-    Complete auto-generated API documentation
-
-</div>
+The native dependency is Windows-only. Documentation, models, and fake-adapter
+tests work on every development platform.

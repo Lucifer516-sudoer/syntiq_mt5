@@ -3,6 +3,7 @@ from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
 import pytest
+from pydantic import ValidationError
 
 from syntiq_mt5 import (
     MT5,
@@ -45,6 +46,17 @@ def test_context_manager_owns_lifecycle():
 
     assert not mt5.connected
     assert [call[0] for call in fake.calls] == ["initialize", "version", "shutdown"]
+
+
+def test_active_session_cannot_be_reentered():
+    fake = adapter()
+
+    with (
+        MT5(adapter=fake) as mt5,
+        pytest.raises(MT5StateError, match="re-entered"),
+        mt5,
+    ):
+        pass
 
 
 def test_operations_require_an_active_session():
@@ -114,6 +126,9 @@ def test_recent_candles_exclude_current_bar_by_default():
     assert candles[0].close == 1.1
     assert fake.calls[1][1] == ("EURUSD", 60, 1, 1)
 
+    with pytest.raises(ValidationError, match="frozen"):
+        candles[0].close = 2.0
+
 
 def test_market_book_context_always_releases_subscription():
     fake = adapter(market_book_add=[True], market_book_release=[True])
@@ -153,6 +168,29 @@ def test_order_check_uses_its_own_response_model():
 
     assert checked.accepted
     assert checked.margin_free == 9_960.0
+
+
+def test_trade_response_request_echo_is_read_only():
+    response = SimpleNamespace(
+        retcode=0,
+        balance=10_000.0,
+        equity=10_000.0,
+        profit=0.0,
+        margin=0.0,
+        margin_free=10_000.0,
+        margin_level=0.0,
+        comment="Done",
+        request={"symbol": "EURUSD"},
+    )
+    fake = adapter(order_check=[response])
+    request = TradeRequest(action=TradeAction.DEAL, symbol="EURUSD", volume=0.1)
+
+    with MT5(adapter=fake) as mt5:
+        checked = mt5.order_check(request)
+
+    assert checked.request is not None
+    with pytest.raises(TypeError):
+        checked.request["symbol"] = "GBPUSD"  # type: ignore[index]
 
 
 def test_order_calc_uses_order_type_not_trade_action():

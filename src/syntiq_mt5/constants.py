@@ -1,6 +1,11 @@
-"""MT5 constants for trading operations, timeframes, and data retrieval."""
+"""Platform-independent MT5 constants for trading and market data."""
 
-from syntiq_mt5._core.mt5_import import mt5
+from types import SimpleNamespace
+
+# Official MT5 integer constants are protocol values, not runtime configuration.
+# Existing declarations use ``getattr`` only to retain their documented fallback
+# notation; this empty namespace makes those canonical values platform-neutral.
+mt5 = SimpleNamespace()
 
 # ── Position Types ────────────────────────────────────────────────────────────
 # POSITION_TYPE_BUY  (0) – long position
@@ -95,10 +100,10 @@ from syntiq_mt5._core.mt5_import import mt5
 # DEAL_REASON_SPLIT    (9) – split
 
 # ── Book Types ────────────────────────────────────────────────────────────────
-# BOOK_TYPE_SELL        (0) – sell order at the specified price
-# BOOK_TYPE_BUY         (1) – buy order at the specified price
-# BOOK_TYPE_SELL_MARKET (2) – sell order at market price
-# BOOK_TYPE_BUY_MARKET  (3) – buy order at market price
+# BOOK_TYPE_SELL        (1) – sell order at the specified price
+# BOOK_TYPE_BUY         (2) – buy order at the specified price
+# BOOK_TYPE_SELL_MARKET (3) – sell order at market price
+# BOOK_TYPE_BUY_MARKET  (4) – buy order at market price
 
 # Trade Actions
 TRADE_ACTION_DEAL = getattr(mt5, "TRADE_ACTION_DEAL", 1)

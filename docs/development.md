@@ -11,23 +11,25 @@ uv sync --locked --all-groups
 ## Checks
 
 ```bash
-uv run ruff format src tests examples
-uv run ruff check src tests examples
+uv run ruff format src tests examples scripts
+uv run ruff check src tests examples scripts
 uv run mypy src
 uv run pytest
 uv run mkdocs build --strict
-uv build
+uv build --clear
 ```
 
 ## Architecture
 
-`MT5` is the external seam. It owns lifecycle, UTC validation, failure
-classification, conversion, and resource cleanup. `MT5Adapter` is an internal
-seam around the process-global C extension. Production uses `NativeMT5Adapter`;
-tests inject a deterministic fake that returns native-shaped replies.
+`SyntiqMT5` is the external seam. It owns lifecycle, UTC validation, failure
+classification, conversion, and resource cleanup. `MT5Adapter` is the public
+transport seam used for deterministic tests and alternate transports. The
+private `NativeMT5Adapter` is the production adapter around the process-global C
+extension.
 
 ```python
-from syntiq_mt5 import AdapterReply, ErrorInfo, MT5
+from syntiq_mt5 import AdapterReply, ErrorInfo, SyntiqMT5
+
 
 class FakeAdapter:
     def call(self, operation, /, *args, **kwargs):
@@ -37,7 +39,7 @@ class FakeAdapter:
             return AdapterReply((), ErrorInfo(code=1, message="Success"))
         return AdapterReply(None, ErrorInfo(code=1, message="Success"))
 
-with MT5(adapter=FakeAdapter()) as mt5:
+with SyntiqMT5(adapter=FakeAdapter()) as mt5:
     assert mt5.positions() == ()
 ```
 

@@ -14,12 +14,12 @@ fake-adapter tests remain usable on other platforms.
 ## Before A Pull Request
 
 ```bash
-uv run ruff format src tests examples
-uv run ruff check src tests examples
+uv run ruff format src tests examples scripts
+uv run ruff check src tests examples scripts
 uv run mypy src
 uv run pytest
 uv run mkdocs build --strict
-uv build
+uv build --clear
 ```
 
 Add tests at the public `MT5` seam. Native-shaped fake responses are preferred to

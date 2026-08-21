@@ -1,11 +1,10 @@
 """Tick model for raw MT5 price feed data."""
 
-from pydantic import BaseModel
-
 from syntiq_mt5 import constants
+from syntiq_mt5._internal.model import MT5Model
 
 
-class Tick(BaseModel):
+class Tick(MT5Model):
     """A single price tick from the MT5 market data feed.
 
     Wraps the raw tick struct returned by ``mt5.copy_ticks_from()`` and
@@ -23,6 +22,7 @@ class Tick(BaseModel):
         flags: Bitmask of ``TICK_FLAG_*`` constants indicating which fields
             were updated in this tick.
         volume_real: Last trade volume as a fractional value.
+
     """
 
     time: int

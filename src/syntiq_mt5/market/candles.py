@@ -1,9 +1,9 @@
 """OHLCV candle model for MT5 rate data."""
 
-from pydantic import BaseModel
+from syntiq_mt5._internal.model import MT5Model
 
 
-class Candle(BaseModel):
+class Candle(MT5Model):
     """A single OHLCV bar from the MT5 price history.
 
     Wraps one row of the numpy structured array returned by
@@ -19,6 +19,7 @@ class Candle(BaseModel):
         tick_volume: Number of price ticks during the bar.
         spread: Spread in points at bar open.
         real_volume: Traded volume (exchange instruments only; 0 for Forex).
+
     """
 
     time: int

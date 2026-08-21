@@ -2,11 +2,11 @@
 
 from datetime import UTC, datetime, timedelta
 
-from syntiq_mt5 import MT5, constants
+from syntiq_mt5 import SyntiqMT5, constants
 
 
 def main() -> None:
-    with MT5() as mt5:
+    with SyntiqMT5() as mt5:
         account = mt5.account_info()
         print(f"Account {account.login}: {account.balance} {account.currency}")
 

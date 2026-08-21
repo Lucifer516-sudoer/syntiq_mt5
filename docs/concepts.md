@@ -1,5 +1,11 @@
 # Design And Semantics
 
+## Public class name
+
+`SyntiqMT5` is the canonical, package-specific session class. `MT5` is a concise
+alias to the same class for scripts where the package context is already clear.
+There is one implementation and one operational interface behind both names.
+
 ## Process-global ownership
 
 The official extension has one terminal connection and one `last_error()` state

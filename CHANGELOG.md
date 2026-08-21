@@ -11,7 +11,10 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Replaced the public `Result[T]` contract with direct typed return values and
   typed `MT5Error` exceptions.
 - Introduced the managed `MT5` session as the primary public interface.
+- Removed the legacy Result client, shallow service modules, and compatibility
+  operational aliases; `MT5` is now the sole operational interface.
 - Moved native access behind an injectable, lazy, process-serialized adapter.
+- Made all validated credentials, requests, and terminal snapshots immutable.
 - Changed collection results to immutable tuples and kept empty results distinct
   from native failure sentinels.
 - Made recent candle retrieval exclude the still-forming current bar by default.

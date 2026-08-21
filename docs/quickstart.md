@@ -18,7 +18,7 @@ import os
 
 from pydantic import SecretStr
 
-from syntiq_mt5 import LoginCredential, MT5
+from syntiq_mt5 import LoginCredential, SyntiqMT5
 
 credentials = LoginCredential(
     login=int(os.environ["MT5_LOGIN"]),
@@ -27,7 +27,7 @@ credentials = LoginCredential(
     # path=r"C:\Program Files\MetaTrader 5\terminal64.exe",  # optional
 )
 
-with MT5(credentials) as mt5:
+with SyntiqMT5(credentials) as mt5:
     account = mt5.account_info()
     print(account.login, account.balance, account.currency)
 ```
@@ -40,7 +40,7 @@ Entering the context acquires process ownership and calls the official
 ```python
 from syntiq_mt5 import constants
 
-with MT5(credentials) as mt5:
+with SyntiqMT5(credentials) as mt5:
     positions = mt5.positions()
     candles = mt5.candles("EURUSD", constants.TIMEFRAME_H1, count=100)
 
@@ -57,7 +57,7 @@ matched. Native `None` is treated as failure and raises `MT5CallError`.
 from syntiq_mt5 import MT5Error
 
 try:
-    with MT5(credentials) as mt5:
+    with SyntiqMT5(credentials) as mt5:
         mt5.symbol_info("NOT-A-SYMBOL")
 except MT5Error as error:
     print(f"{error.operation} [{error.code}]: {error.message}")
@@ -73,7 +73,7 @@ send response.
 from datetime import UTC, datetime, timedelta
 
 end = datetime.now(UTC)
-with MT5(credentials) as mt5:
+with SyntiqMT5(credentials) as mt5:
     ticks = mt5.copy_ticks_range(
         "EURUSD",
         end - timedelta(minutes=5),

@@ -12,20 +12,21 @@ from datetime import UTC, datetime
 from threading import Lock
 from typing import Any, TypeVar, cast
 
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
 
-from syntiq_mt5._core.errors import (
-    MT5CallError,
-    MT5ErrorInfo,
-    MT5PayloadError,
-    MT5PlatformError,
-    MT5StateError,
-)
-from syntiq_mt5._core.raw import DEFAULT_ADAPTER
+from syntiq_mt5._internal.model import MT5Model
+from syntiq_mt5._internal.native import DEFAULT_ADAPTER
 from syntiq_mt5.account.models import AccountInfo
 from syntiq_mt5.adapter import MT5Adapter
 from syntiq_mt5.connection.models import LoginCredential
 from syntiq_mt5.enums import OrderType
+from syntiq_mt5.errors import (
+    ErrorInfo,
+    MT5CallError,
+    MT5PayloadError,
+    MT5PlatformError,
+    MT5StateError,
+)
 from syntiq_mt5.history.models import Deal
 from syntiq_mt5.market.candles import Candle
 from syntiq_mt5.market_book.models import BookEntry
@@ -41,15 +42,22 @@ from syntiq_mt5.symbols.models import SymbolInfo, SymbolTick
 from syntiq_mt5.terminal.models import TerminalInfo
 from syntiq_mt5.ticks.models import Tick
 
-ModelT = TypeVar("ModelT", bound=BaseModel)
+ModelT = TypeVar("ModelT", bound=MT5Model)
 
 
-class MT5:
+class SyntiqMT5:
     """A managed, typed session over the process-global MT5 terminal.
 
     Pass credentials to the constructor for the common one-step context-manager
     flow, or call :meth:`initialize` and :meth:`login` explicitly. Only one
     native session may be active in a process at a time.
+
+    All terminal operations share one error contract. Inactive sessions raise
+    :class:`MT5StateError`; unavailable native integration raises
+    :class:`MT5PlatformError`; native failures raise :class:`MT5CallError`; and
+    invalid native response shapes raise :class:`MT5PayloadError`. Invalid
+    caller values such as naive datetimes or non-positive counts raise
+    :class:`ValueError` before crossing the adapter seam.
     """
 
     _lease = Lock()
@@ -60,18 +68,33 @@ class MT5:
         *,
         adapter: MT5Adapter | None = None,
     ) -> None:
+        """Create a session without connecting until ``initialize`` or entry.
+
+        Args:
+            credentials: Optional credentials used when entering the context.
+            adapter: Alternate transport, typically a deterministic test fake.
+
+        """
         self._credentials = credentials
         self._adapter = adapter or DEFAULT_ADAPTER
         self._active = False
         self._owns_lease = False
         self._symbol_cache: dict[str, tuple[int, float]] = {}
-        self._last_error = MT5ErrorInfo(code=1, message="Success")
+        self._last_error = ErrorInfo(code=1, message="Success")
 
-    def __enter__(self) -> MT5:
+    def __enter__(self) -> SyntiqMT5:
+        """Initialize the configured terminal and return this active session."""
+        if self._active:
+            raise MT5StateError(
+                "context_enter",
+                -10,
+                "this MT5 session is already active and cannot be re-entered",
+            )
         self.initialize(self._credentials)
         return self
 
     def __exit__(self, *_: object) -> None:
+        """Shut down the terminal when leaving the managed context."""
         self.shutdown()
 
     @property
@@ -80,7 +103,20 @@ class MT5:
         return self._active
 
     def initialize(self, credentials: LoginCredential | None = None) -> None:
-        """Initialize MT5, optionally authenticating in the same native call."""
+        """Initialize MT5, optionally authenticating in the same native call.
+
+        Args:
+            credentials: Optional terminal path and account credentials passed
+                to the official ``initialize`` operation.
+
+        Raises:
+            MT5StateError: If another session owns the process-global terminal.
+            MT5CallError: If native initialization fails.
+            MT5PlatformError: If the official package is unavailable.
+
+        The process lease is released automatically when initialization fails.
+        Calling this method on an already active session is a no-op.
+        """
         if self._active:
             return
         if not self._lease.acquire(blocking=False):
@@ -111,7 +147,15 @@ class MT5:
             raise
 
     def login(self, credentials: LoginCredential) -> None:
-        """Authenticate the initialized terminal with a trading account."""
+        """Authenticate the initialized terminal with a trading account.
+
+        Args:
+            credentials: Account number, secret password, server, and timeout.
+
+        Raises:
+            MT5StateError: If this session has not been initialized.
+            MT5CallError: If the terminal cannot authenticate the account.
+        """
         self._require_active("login")
         self._call_bool(
             "login",
@@ -124,7 +168,11 @@ class MT5:
         self._symbol_cache.clear()
 
     def shutdown(self) -> None:
-        """Close the terminal connection and release process ownership."""
+        """Close the terminal connection and release process ownership.
+
+        Calling shutdown without an owned lease is a no-op. Local state and the
+        process lease are released even when native shutdown raises an error.
+        """
         if not self._owns_lease:
             return
         try:
@@ -145,12 +193,19 @@ class MT5:
             raise self._payload_error("version", exc) from exc
 
     def account_info(self) -> AccountInfo:
+        """Return a snapshot of the currently authenticated trading account."""
         return self._model("account_info", AccountInfo)
 
     def terminal_info(self) -> TerminalInfo:
+        """Return terminal configuration, connectivity, and permission state."""
         return self._model("terminal_info", TerminalInfo)
 
     def positions(self, symbol: str | None = None) -> tuple[Position, ...]:
+        """Return open positions, optionally restricted to one symbol.
+
+        An empty tuple is a successful result. Symbol precision is attached to
+        every position so its pip-related convenience properties remain valid.
+        """
         kwargs = {"symbol": symbol} if symbol is not None else {}
         rows = self._rows("positions_get", **kwargs)
         try:
@@ -176,12 +231,24 @@ class MT5:
         )
 
     def positions_total(self) -> int:
+        """Return the number of currently open positions."""
         return self._integer("positions_total")
 
     def symbols_total(self) -> int:
+        """Return the number of symbols known to the connected terminal."""
         return self._integer("symbols_total")
 
     def symbols_get(self, group: str | None = None) -> tuple[SymbolInfo, ...]:
+        """Return symbol specifications, optionally filtered by an MT5 group mask.
+
+        Args:
+            group: Comma-separated masks applied from left to right. ``*`` is a
+                wildcard and ``!`` excludes matches, for example
+                ``"*USD*,!USDJPY"``.
+
+        Returns:
+            Matching specifications, or an empty tuple when nothing matches.
+        """
         kwargs = {"group": group} if group is not None else {}
         return tuple(
             self._parse_model("symbols_get", SymbolInfo, row)
@@ -189,12 +256,15 @@ class MT5:
         )
 
     def symbol_select(self, symbol: str, enable: bool = True) -> None:
+        """Add a symbol to Market Watch or remove it when ``enable`` is false."""
         self._call_bool("symbol_select", symbol, enable)
 
     def symbol_info(self, symbol: str) -> SymbolInfo:
+        """Return the complete terminal specification for ``symbol``."""
         return self._model("symbol_info", SymbolInfo, symbol)
 
     def symbol_info_tick(self, symbol: str) -> SymbolTick:
+        """Return the latest quote tick for ``symbol``."""
         return self._model("symbol_info_tick", SymbolTick, symbol)
 
     def candles(
@@ -205,7 +275,20 @@ class MT5:
         *,
         include_current: bool = False,
     ) -> tuple[Candle, ...]:
-        """Return recent candles chronologically; exclude the open bar by default."""
+        """Return recent candles chronologically.
+
+        Args:
+            symbol: Broker-defined instrument name.
+            timeframe: One of the exported ``TIMEFRAME_*`` integer constants.
+            count: Positive maximum number of candles.
+            include_current: Include native position zero, which is still forming.
+
+        Returns:
+            Completed candles by default, or an empty tuple when none are loaded.
+
+        Raises:
+            ValueError: If ``count`` is not positive.
+        """
         if count <= 0:
             raise ValueError("count must be greater than zero")
         start_pos = 0 if include_current else 1
@@ -221,7 +304,17 @@ class MT5:
         date_from: datetime,
         count: int,
     ) -> tuple[Candle, ...]:
-        """Return up to ``count`` bars whose open time is at or before the UTC instant."""
+        """Return up to ``count`` bars at or before an aware UTC instant.
+
+        Args:
+            symbol: Broker-defined instrument name.
+            timeframe: One of the exported ``TIMEFRAME_*`` constants.
+            date_from: Timezone-aware upper boundary, normalized to UTC.
+            count: Positive maximum number of candles moving into history.
+
+        Raises:
+            ValueError: If the datetime is naive or ``count`` is not positive.
+        """
         if count <= 0:
             raise ValueError("count must be greater than zero")
         rows = self._rows(
@@ -236,6 +329,11 @@ class MT5:
         date_from: datetime,
         date_to: datetime,
     ) -> tuple[Candle, ...]:
+        """Return candles whose open times fall in the inclusive UTC range.
+
+        Both boundaries must be timezone-aware and ``date_from`` must not follow
+        ``date_to``. An empty tuple is a successful no-data response.
+        """
         start, end = self._range(date_from, date_to)
         rows = self._rows("copy_rates_range", symbol, timeframe, start, end)
         return tuple(self._parse_model("copy_rates_range", Candle, row) for row in rows)
@@ -247,6 +345,18 @@ class MT5:
         count: int,
         flags: int,
     ) -> tuple[Tick, ...]:
+        """Return up to ``count`` ticks beginning at an aware UTC instant.
+
+        Args:
+            symbol: Broker-defined instrument name.
+            date_from: Timezone-aware lower boundary, normalized to UTC.
+            count: Positive maximum number of ticks.
+            flags: One of ``COPY_TICKS_ALL``, ``COPY_TICKS_INFO``, or
+                ``COPY_TICKS_TRADE``.
+
+        Raises:
+            ValueError: If the datetime is naive or ``count`` is not positive.
+        """
         if count <= 0:
             raise ValueError("count must be greater than zero")
         rows = self._rows("copy_ticks_from", symbol, self._utc(date_from), count, flags)
@@ -259,24 +369,32 @@ class MT5:
         date_to: datetime,
         flags: int,
     ) -> tuple[Tick, ...]:
+        """Return ticks within the supplied timezone-aware date range.
+
+        ``flags`` must be an exported ``COPY_TICKS_*`` value. Both boundaries
+        are normalized to UTC and an empty tuple is a valid response.
+        """
         start, end = self._range(date_from, date_to)
         rows = self._rows("copy_ticks_range", symbol, start, end, flags)
         return tuple(self._parse_model("copy_ticks_range", Tick, row) for row in rows)
 
     def market_book_add(self, symbol: str) -> None:
+        """Subscribe the terminal to market-depth updates for ``symbol``."""
         self._call_bool("market_book_add", symbol)
 
     def market_book_get(self, symbol: str) -> tuple[BookEntry, ...]:
+        """Return the current market-depth snapshot for a subscribed symbol."""
         return tuple(
             self._parse_model("market_book_get", BookEntry, row)
             for row in self._rows("market_book_get", symbol)
         )
 
     def market_book_release(self, symbol: str) -> None:
+        """Release a previously acquired market-depth subscription."""
         self._call_bool("market_book_release", symbol)
 
     @contextmanager
-    def market_book(self, symbol: str) -> Iterator[MT5]:
+    def market_book(self, symbol: str) -> Iterator[SyntiqMT5]:
         """Subscribe to market depth and always release it on context exit."""
         self.market_book_add(symbol)
         try:
@@ -285,6 +403,7 @@ class MT5:
             self.market_book_release(symbol)
 
     def orders_total(self) -> int:
+        """Return the number of active pending orders."""
         return self._integer("orders_total")
 
     def orders_get(
@@ -294,6 +413,17 @@ class MT5:
         group: str | None = None,
         ticket: int | None = None,
     ) -> tuple[Order, ...]:
+        """Return active orders selected by at most one supported filter.
+
+        Args:
+            symbol: Exact symbol filter.
+            group: MT5 wildcard group mask.
+            ticket: Exact order ticket.
+
+        Raises:
+            ValueError: If more than one filter is supplied.
+
+        """
         selected = [("symbol", symbol), ("group", group), ("ticket", ticket)]
         supplied = [(name, value) for name, value in selected if value is not None]
         if len(supplied) > 1:
@@ -311,6 +441,11 @@ class MT5:
         volume: float,
         price: float,
     ) -> float:
+        """Calculate required margin for a hypothetical BUY or SELL order.
+
+        ``volume`` is expressed in trading lots, ``price`` in symbol price
+        units, and the returned amount in account currency.
+        """
         return self._number("order_calc_margin", int(order_type), symbol, volume, price)
 
     def order_calc_profit(
@@ -321,6 +456,11 @@ class MT5:
         price_open: float,
         price_close: float,
     ) -> float:
+        """Calculate hypothetical profit in account currency between two prices.
+
+        ``volume`` is expressed in trading lots. ``order_type`` describes BUY or
+        SELL direction rather than a ``TradeAction``.
+        """
         return self._number(
             "order_calc_profit",
             int(order_type),
@@ -331,9 +471,15 @@ class MT5:
         )
 
     def order_check(self, request: TradeRequest) -> TradeCheckResult:
+        """Validate a request and return projected account impact without sending."""
         return self._model("order_check", TradeCheckResult, request.to_native())
 
     def order_send(self, request: TradeRequest) -> TradeResult:
+        """Submit a trade request and return the broker's complete response.
+
+        A returned response can represent rejection or partial execution. Inspect
+        ``retcode`` and ``is_successful``; transport failures raise ``MT5Error``.
+        """
         return self._model("order_send", TradeResult, request.to_native())
 
     def history_orders_get(
@@ -345,6 +491,11 @@ class MT5:
         ticket: int | None = None,
         position: int | None = None,
     ) -> tuple[HistoricalOrder, ...]:
+        """Return historical orders by date range, order ticket, or position.
+
+        ``group`` is valid only with a complete date range. Exactly one query
+        strategy must be supplied.
+        """
         args, kwargs = self._history_query(date_from, date_to, group, ticket, position)
         rows = self._rows("history_orders_get", *args, **kwargs)
         return tuple(
@@ -361,15 +512,22 @@ class MT5:
         ticket: int | None = None,
         position: int | None = None,
     ) -> tuple[Deal, ...]:
+        """Return historical deals by date range, order ticket, or position.
+
+        Exactly one complete date range, ticket, or position strategy is
+        required. ``group`` is accepted only with a date range.
+        """
         args, kwargs = self._history_query(date_from, date_to, group, ticket, position)
         rows = self._rows("history_deals_get", *args, **kwargs)
         return tuple(self._parse_model("history_deals_get", Deal, row) for row in rows)
 
     def history_orders_total(self, date_from: datetime, date_to: datetime) -> int:
+        """Return historical-order count for an inclusive UTC date range."""
         start, end = self._range(date_from, date_to)
         return self._integer("history_orders_total", start, end)
 
     def history_deals_total(self, date_from: datetime, date_to: datetime) -> int:
+        """Return historical-deal count for an inclusive UTC date range."""
         start, end = self._range(date_from, date_to)
         return self._integer("history_deals_total", start, end)
 
@@ -462,13 +620,15 @@ class MT5:
                 else record[name]
                 for name in names
             }
-        return {name: MT5._normalize(field) for name, field in mapping.items()}
+        return {name: SyntiqMT5._normalize(field) for name, field in mapping.items()}
 
     @staticmethod
     def _normalize(value: object) -> object:
         if hasattr(value, "_asdict"):
             mapping = cast(Mapping[str, object], value._asdict())
-            return {name: MT5._normalize(field) for name, field in mapping.items()}
+            return {
+                name: SyntiqMT5._normalize(field) for name, field in mapping.items()
+            }
         return value
 
     @staticmethod
@@ -524,4 +684,5 @@ class MT5:
             self._lease.release()
 
 
-MetaTrader5Client = MT5
+MT5 = SyntiqMT5
+"""Concise alias for :class:`SyntiqMT5`."""

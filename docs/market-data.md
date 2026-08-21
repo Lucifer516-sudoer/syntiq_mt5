@@ -3,7 +3,7 @@
 ## Recent completed candles
 
 ```python
-with MT5() as mt5:
+with SyntiqMT5() as mt5:
     bars = mt5.candles("EURUSD", constants.TIMEFRAME_M15, 200)
 ```
 
@@ -14,7 +14,7 @@ with MT5() as mt5:
 ```python
 from datetime import UTC, datetime
 
-with MT5() as mt5:
+with SyntiqMT5() as mt5:
     bars = mt5.copy_rates_range(
         "EURUSD",
         constants.TIMEFRAME_H1,

@@ -1,8 +1,8 @@
 """Typed IntEnum classes for all MT5 enum-valued fields.
 
-These enums are the single source of truth for valid MT5 enum values within
-the SDK.  They are backed by the integer constants in ``syntiq_mt5.constants``
-so the numeric values are always in sync with the live MT5 library.
+These enums are the single source of truth for known MT5 enum values within
+the SDK. They are backed by the canonical protocol values declared in
+``syntiq_mt5.constants`` and do not require the native package at import time.
 
 Why enums instead of raw integers
 ----------------------------------

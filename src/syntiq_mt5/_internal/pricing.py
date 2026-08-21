@@ -1,4 +1,4 @@
-"""Pricing utility functions shared across the SDK."""
+"""Private pricing utility functions shared by public models."""
 
 
 def calculate_pip_size(digits: int, point: float) -> float:
@@ -15,5 +15,6 @@ def calculate_pip_size(digits: int, point: float) -> float:
         Pip size in price units.
             - digits in (3, 5) → point * 10  (fractional-pip symbols)
             - otherwise        → point        (standard symbols)
+
     """
     return point * 10 if digits in (3, 5) else point
