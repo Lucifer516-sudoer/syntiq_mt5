@@ -1,5 +1,5 @@
-site_name: syntiq-mt5
-site_description: Minimal, typed, and reliable MetaTrader 5 SDK for Python
+site_name: Syntiq MT5
+site_description: A typed, testable Python interface for MetaTrader 5
 site_url: https://lucifer516-sudoer.github.io/syntiq_mt5/
 repo_url: https://github.com/Lucifer516-sudoer/syntiq_mt5
 repo_name: Lucifer516-sudoer/syntiq_mt5
@@ -7,6 +7,7 @@ copyright: Copyright &copy; 2026 Lucifer516-sudoer
 
 theme:
   name: material
+  language: en
   logo: assets/logo.svg
   favicon: assets/favicon.ico
   icon:
@@ -16,20 +17,20 @@ theme:
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: deep purple
-      accent: cyan
+      primary: custom
+      accent: custom
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: deep purple
-      accent: cyan
+      primary: custom
+      accent: custom
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
   font:
-    text: Inter
+    text: Manrope
     code: JetBrains Mono
   features:
     # Navigation
@@ -42,6 +43,7 @@ theme:
     - navigation.top
     - navigation.footer
     - navigation.indexes
+    - navigation.path
     # Search
     - search.highlight
     - search.suggest
@@ -49,7 +51,9 @@ theme:
     # Content
     - content.code.copy
     - content.code.annotate
+    - content.code.select
     - content.tabs.link
+    - content.tooltips
     # TOC
     - toc.follow
 
@@ -126,6 +130,7 @@ extra_css:
   - assets/custom.css
 
 extra:
+  generator: false
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/Lucifer516-sudoer/syntiq_mt5
@@ -136,13 +141,13 @@ extra:
 
 nav:
   - Home: index.md
-  - Quickstart: quickstart.md
-  - Design And Semantics: concepts.md
+  - Get Started: quickstart.md
+  - Core Design: concepts.md
   - Guides:
       - Market Data: market-data.md
-      - Trading: trading.md
+      - Trading Safely: trading.md
   - Reference:
-      - Session: api-session.md
+      - Public API: api-session.md
   - Development:
       - Contributing: development.md
       - Releasing To PyPI: releasing.md

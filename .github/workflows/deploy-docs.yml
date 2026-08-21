@@ -9,6 +9,8 @@ on:
       - 'docs/**'
       - 'src/**'
       - 'mkdocs.yml'
+      - 'pyproject.toml'
+      - 'uv.lock'
       - '.github/workflows/deploy-docs.yml'
       - '*.md'
   pull_request:
@@ -18,15 +20,16 @@ on:
       - 'docs/**'
       - 'src/**'
       - 'mkdocs.yml'
+      - 'pyproject.toml'
+      - 'uv.lock'
+  workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: documentation-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -59,6 +62,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
