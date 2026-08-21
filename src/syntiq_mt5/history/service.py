@@ -5,6 +5,16 @@ from datetime import datetime
 from syntiq_mt5._core.execution import Result
 from syntiq_mt5._core.mt5_import import mt5
 from syntiq_mt5._core.raw import call_mt5
+from syntiq_mt5.enums import (
+    DealEntry,
+    DealReason,
+    DealType,
+    OrderFilling,
+    OrderReason,
+    OrderState,
+    OrderTime,
+    OrderType,
+)
 from syntiq_mt5.history.models import Deal
 from syntiq_mt5.orders.models import HistoricalOrder
 
@@ -17,10 +27,17 @@ class HistoryService:
     ``call_mt5``, parses raw structs into ``HistoricalOrder`` and ``Deal``
     models, and returns ``Result[T]``.
     """
-    def history_orders_total(self, date_from: datetime, date_to: datetime) -> Result[int]:
+
+    def history_orders_total(
+        self, date_from: datetime, date_to: datetime
+    ) -> Result[int]:
         raw = call_mt5(mt5.history_orders_total, date_from, date_to)
         if raw.data is None:
-            return Result.fail(raw.error, context="history_orders_total", operation="history_orders_total")
+            return Result.fail(
+                raw.error,
+                context="history_orders_total",
+                operation="history_orders_total",
+            )
         try:
             count = int(raw.data)
         except (TypeError, ValueError) as exc:
@@ -34,7 +51,9 @@ class HistoryService:
                 context="history_orders_total",
                 operation="history_orders_total",
             )
-        return Result.ok(count, context="history_orders_total", operation="history_orders_total")
+        return Result.ok(
+            count, context="history_orders_total", operation="history_orders_total"
+        )
 
     def history_orders_get(
         self,
@@ -54,14 +73,20 @@ class HistoryService:
             raw = call_mt5(mt5.history_orders_get, position=position)
         else:
             from syntiq_mt5._core.errors import MT5ErrorInfo
+
             return Result.fail(
-                MT5ErrorInfo(code=-5, message="Must provide date_from/date_to, group, ticket, or position"),
+                MT5ErrorInfo(
+                    code=-5,
+                    message="Must provide date_from/date_to, group, ticket, or position",
+                ),
                 context="history_orders_get",
                 operation="history_orders_get",
             )
 
         if raw.data is None:
-            return Result.fail(raw.error, context="history_orders_get", operation="history_orders_get")
+            return Result.fail(
+                raw.error, context="history_orders_get", operation="history_orders_get"
+            )
 
         try:
             orders = [
@@ -72,14 +97,14 @@ class HistoryService:
                     time_done=int(order.time_done),
                     time_done_msc=int(order.time_done_msc),
                     time_expiration=int(order.time_expiration),
-                    type=int(order.type),
-                    type_time=int(order.type_time),
-                    type_filling=int(order.type_filling),
-                    state=int(order.state),
+                    type=OrderType(int(order.type)),
+                    type_time=OrderTime(int(order.type_time)),
+                    type_filling=OrderFilling(int(order.type_filling)),
+                    state=OrderState(int(order.state)),
                     magic=int(order.magic),
                     position_id=int(order.position_id),
                     position_by_id=int(order.position_by_id),
-                    reason=int(order.reason),
+                    reason=OrderReason(int(order.reason)),
                     volume_initial=float(order.volume_initial),
                     volume_current=float(order.volume_current),
                     price_open=float(order.price_open),
@@ -104,12 +129,20 @@ class HistoryService:
                 context="history_orders_get",
                 operation="history_orders_get",
             )
-        return Result.ok(orders, context="history_orders_get", operation="history_orders_get")
+        return Result.ok(
+            orders, context="history_orders_get", operation="history_orders_get"
+        )
 
-    def history_deals_total(self, date_from: datetime, date_to: datetime) -> Result[int]:
+    def history_deals_total(
+        self, date_from: datetime, date_to: datetime
+    ) -> Result[int]:
         raw = call_mt5(mt5.history_deals_total, date_from, date_to)
         if raw.data is None:
-            return Result.fail(raw.error, context="history_deals_total", operation="history_deals_total")
+            return Result.fail(
+                raw.error,
+                context="history_deals_total",
+                operation="history_deals_total",
+            )
         try:
             count = int(raw.data)
         except (TypeError, ValueError) as exc:
@@ -123,7 +156,9 @@ class HistoryService:
                 context="history_deals_total",
                 operation="history_deals_total",
             )
-        return Result.ok(count, context="history_deals_total", operation="history_deals_total")
+        return Result.ok(
+            count, context="history_deals_total", operation="history_deals_total"
+        )
 
     def history_deals_get(
         self,
@@ -143,14 +178,20 @@ class HistoryService:
             raw = call_mt5(mt5.history_deals_get, position=position)
         else:
             from syntiq_mt5._core.errors import MT5ErrorInfo
+
             return Result.fail(
-                MT5ErrorInfo(code=-5, message="Must provide date_from/date_to, group, ticket, or position"),
+                MT5ErrorInfo(
+                    code=-5,
+                    message="Must provide date_from/date_to, group, ticket, or position",
+                ),
                 context="history_deals_get",
                 operation="history_deals_get",
             )
 
         if raw.data is None:
-            return Result.fail(raw.error, context="history_deals_get", operation="history_deals_get")
+            return Result.fail(
+                raw.error, context="history_deals_get", operation="history_deals_get"
+            )
 
         try:
             deals = [
@@ -159,11 +200,11 @@ class HistoryService:
                     order=int(deal.order),
                     time=int(deal.time),
                     time_msc=int(deal.time_msc),
-                    type=int(deal.type),
-                    entry=int(deal.entry),
+                    type=DealType(int(deal.type)),
+                    entry=DealEntry(int(deal.entry)),
                     magic=int(deal.magic),
                     position_id=int(deal.position_id),
-                    reason=int(deal.reason),
+                    reason=DealReason(int(deal.reason)),
                     volume=float(deal.volume),
                     price=float(deal.price),
                     commission=float(deal.commission),
@@ -187,4 +228,6 @@ class HistoryService:
                 context="history_deals_get",
                 operation="history_deals_get",
             )
-        return Result.ok(deals, context="history_deals_get", operation="history_deals_get")
+        return Result.ok(
+            deals, context="history_deals_get", operation="history_deals_get"
+        )

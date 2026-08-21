@@ -1,4 +1,4 @@
-name: Deploy Documentation
+name: Documentation
 
 
 on:
@@ -36,24 +36,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
         with:
+          version: "0.11.28"
+          enable-cache: true
           python-version: "3.12"
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v2
-        with:
-          version: "latest"
-
       - name: Install dependencies
-        run: uv sync --group dev --python 3.12
+        run: uv sync --locked --all-groups
 
       - name: Build documentation
-        run: uv run mkdocs build --config-file mkdocs.yml --site-dir site
+        run: uv run mkdocs build --strict --config-file mkdocs.yml --site-dir site
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: site
 

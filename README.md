@@ -1,16 +1,34 @@
 # syntiq-mt5
 
-**MT5 trading API, fixed for Python developers.**
+A typed, testable Python interface for MetaTrader 5.
 
-> No global-state guesswork. No ambiguous returns.
+[Documentation](https://lucifer516-sudoer.github.io/syntiq_mt5/) | [Changelog](CHANGELOG.md) | [Contributing](CONTRIBUTING.md)
 
-`syntiq-mt5` gives you a typed client, operation-scoped errors, and predictable results—so every call tells you exactly what happened.
+> Project status: alpha. Validate every trading workflow against a demo account before using it with live funds.
 
-## Prerequisites
+## Why it exists
 
-- **MetaTrader 5 terminal** must be installed
-- **Windows only** (MT5 Python API limitation)
-- Valid MT5 account credentials
+The native `MetaTrader5` package exposes a process-global terminal connection,
+global error state, loosely typed records, and operation-specific failure
+sentinels. `syntiq-mt5` puts those details behind one managed session:
+
+- direct typed return values, not `Result.data | None`;
+- typed exceptions with the operation, MT5 code, and message;
+- a lazy, serialized adapter around the global native extension;
+- immutable tuple snapshots where an empty tuple is a valid result;
+- UTC-aware date validation;
+- separate `TradeCheckResult` and `TradeResult` models;
+- deterministic market-book and terminal cleanup;
+- an injectable adapter seam for tests on Linux, macOS, and CI.
+
+## Requirements
+
+- Python 3.12+
+- Windows for native terminal access
+- MetaTrader 5 terminal and the official `MetaTrader5` Python package
+
+Models and fake-adapter tests work on any platform. Only native terminal access
+is Windows-specific.
 
 ## Install
 
@@ -18,116 +36,72 @@
 pip install syntiq-mt5
 ```
 
-## 10-second quickstart
+## Quickstart
 
 ```python
+import os
+
 from pydantic import SecretStr
-from syntiq_mt5 import LoginCredential, MetaTrader5Client
 
-creds = LoginCredential(login=12345678, password=SecretStr("your-password"), server="Broker-Demo")
+from syntiq_mt5 import LoginCredential, MT5
 
-with MetaTrader5Client() as mt5:
-    init_res = mt5.initialize(creds)
-    if not init_res.success:
-        print(f"Initialize failed: {init_res.error_message}")
-        exit(1)
-    
-    login_res = mt5.login(creds)
-    if not login_res.success:
-        print(f"Login failed: {login_res.error_message}")
-        exit(1)
-    
-    res = mt5.positions()
-
-if res.success and res.data:
-    p = res.data[0]
-    print(f"{p.symbol} | volume={p.volume} | profit={p.pips_profit:.1f} pips")
-else:
-    print(f"{res.operation} failed: {res.error_code} {res.error_message}")
-```
-
-You get one dependable pattern: data when it works, precise context when it doesn’t.
-
-## Why this SDK exists
-
-MT5’s default Python interface is painful in production:
-- `last_error()` is global mutable state
-- return types change across calls
-- lifecycle mistakes are easy to ship
-
-`syntiq-mt5` makes the safe path the obvious path:
-- one client flow (`initialize -> login -> call -> shutdown`)
-- one result contract (`Result[T]`) everywhere
-- typed models with practical metrics (like pip-based profit)
-
-## Using Constants
-
-All MT5 constants are available through the SDK—no need to import `MetaTrader5` directly:
-
-```python
-from syntiq_mt5 import constants
-
-# Timeframes
-res = mt5.get_candles("EURUSD", timeframe=constants.TIMEFRAME_H1, count=50)
-
-# Order types
-request = TradeRequest(
-    action=constants.TRADE_ACTION_DEAL,
-    symbol="EURUSD",
-    volume=0.1,
-    type=constants.ORDER_TYPE_BUY,
-    price=1.1000
+credentials = LoginCredential(
+    login=int(os.environ["MT5_LOGIN"]),
+    password=SecretStr(os.environ["MT5_PASSWORD"]),
+    server=os.environ["MT5_SERVER"],
 )
 
-# Tick flags
-ticks = mt5.get_ticks("EURUSD", flags=constants.COPY_TICKS_ALL, count=100)
+with MT5(credentials) as mt5:
+    account = mt5.account_info()
+    positions = mt5.positions()
+    print(account.login, account.balance, len(positions))
 ```
 
-See the [Constants Reference](https://syntiq-mt5.readthedocs.io/reference/constants/) for the complete list.
+The context manager initializes and authenticates in one native call and always
+shuts down. A second active session in the same process is rejected because the
+underlying extension is process-global.
 
-## Result[T] pattern
+## Errors
 
 ```python
-from syntiq_mt5 import constants
+from syntiq_mt5 import MT5, MT5Error
 
-res = mt5.get_candles("EURUSD", timeframe=constants.TIMEFRAME_H1, count=50)
-if res.success:
-    print(f"candles={len(res.data)}")
-else:
-    print(res.operation, res.error_code, res.error_message)
+try:
+    with MT5() as mt5:
+        quote = mt5.symbol_info_tick("UNKNOWN")
+except MT5Error as error:
+    print(error.operation, error.code, error.message)
 ```
 
-Example output:
+Transport and payload failures raise. A valid broker rejection does not:
+`order_check()` and `order_send()` return their response models so you can
+inspect `retcode`, `comment`, and acceptance status.
 
-```text
-EURUSD | volume=0.10 | profit=+10.0 pips
-candles=50
+## Safe candles
+
+```python
+from syntiq_mt5 import MT5, constants
+
+with MT5() as mt5:
+    # Position 0 is the still-forming bar, so it is excluded by default.
+    candles = mt5.candles("EURUSD", constants.TIMEFRAME_H1, count=100)
 ```
 
-## Public API
+## Development
 
-### Core
-- `MetaTrader5Client` - Main client for all MT5 operations
-- `LoginCredential` - Authentication credentials
-- `Result[T]` - Generic result wrapper with success/error handling
+```bash
+uv sync --locked --all-groups
+uv run ruff format src tests examples
+uv run ruff check src tests examples
+uv run mypy src
+uv run pytest
+uv run mkdocs build --strict
+uv build
+```
 
-### Account & Terminal
-- `AccountInfo` - Account balance, equity, margin, leverage
-- `TerminalInfo` - Terminal version, build, connection status
+CI runs these checks on Linux and Windows with Python 3.12 and 3.13. Tagged
+releases are built, verified, and published through PyPI trusted publishing.
 
-### Market Data
-- `Candle` - OHLC price data
-- `Tick` - Tick-level price updates
-- `SymbolInfo` - Symbol specifications and trading parameters
-- `SymbolTick` - Current symbol tick data
+## License
 
-### Trading
-- `Position` - Open position with P&L calculations
-- `Order` - Pending order
-- `HistoricalOrder` - Historical order record
-- `Deal` - Completed transaction
-- `TradeRequest` - Order request parameters
-- `TradeResult` - Order execution result
-
-### Market Depth
-- `BookEntry` - Level 2 order book entry
+MIT. See [LICENSE](LICENSE).

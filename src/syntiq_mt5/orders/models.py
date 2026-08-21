@@ -49,9 +49,9 @@ class Order(BaseModel):
 
     ticket: int
     time_setup: int
-    time_setup_msc: int       # placement time in milliseconds
+    time_setup_msc: int  # placement time in milliseconds
     time_done: int
-    time_done_msc: int        # completion time in milliseconds
+    time_done_msc: int  # completion time in milliseconds
     time_expiration: int
     type: OrderType
     type_time: OrderTime
@@ -165,7 +165,7 @@ class TradeRequest(BaseModel):
     integer — Pydantic coerces integers to the matching enum and rejects
     unknown values at construction time.
 
-    ``model_dump()`` is overridden to cast enum fields back to plain
+    ``to_native()`` casts enum fields back to plain
     ``int`` before the dict is passed to the MT5 C extension, which
     expects native integers.
 
@@ -207,7 +207,7 @@ class TradeRequest(BaseModel):
     position: int = 0
     position_by: int = 0
 
-    def model_dump(self, **kwargs: object) -> dict[str, object]:  # type: ignore[override]
+    def to_native(self) -> dict[str, object]:
         """Serialize to a plain dict with integer enum values for the MT5 API.
 
         The MT5 C extension's ``order_send`` and ``order_check`` functions
@@ -219,7 +219,7 @@ class TradeRequest(BaseModel):
             A dict suitable for passing directly to ``mt5.order_send()``
             or ``mt5.order_check()``.
         """
-        data = super().model_dump(**kwargs)
+        data = super().model_dump()
         for key in ("action", "type", "type_filling", "type_time"):
             if key in data:
                 data[key] = int(data[key])
@@ -227,7 +227,7 @@ class TradeRequest(BaseModel):
 
 
 class TradeResult(BaseModel):
-    """Outcome of a trade request returned by ``order_send`` or ``order_check``.
+    """Outcome of a trade request returned by ``order_send``.
 
     Wraps the raw ``OrderSendResult`` struct from the MT5 C extension.
     The ``retcode`` field is kept as a plain ``int`` rather than an enum
@@ -284,3 +284,26 @@ class TradeResult(BaseModel):
     def requires_requote(self) -> bool:
         """Whether the broker requires a new price before the trade can proceed (``TRADE_RETCODE_REQUOTE``)."""
         return self.retcode == constants.TRADE_RETCODE_REQUOTE
+
+
+class TradeCheckResult(BaseModel):
+    """Projected account state returned by ``order_check``.
+
+    A successful adapter call can still contain a rejected broker decision;
+    inspect ``accepted`` and ``retcode`` before sending the request.
+    """
+
+    retcode: int
+    balance: float
+    equity: float
+    profit: float
+    margin: float
+    margin_free: float
+    margin_level: float
+    comment: str
+    request: dict[str, object] | None = None
+
+    @property
+    def accepted(self) -> bool:
+        """Whether MT5 accepted the request for pre-flight validation."""
+        return self.retcode == 0

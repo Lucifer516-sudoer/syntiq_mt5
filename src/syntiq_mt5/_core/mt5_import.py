@@ -10,7 +10,7 @@ monkeypatch freely.
 from types import SimpleNamespace
 
 try:
-    import MetaTrader5 as mt5  # type: ignore[import-untyped]
+    import MetaTrader5 as mt5  # type: ignore[import-not-found]
 except ModuleNotFoundError:  # pragma: no cover
     mt5 = SimpleNamespace()  # monkeypatched in tests
 

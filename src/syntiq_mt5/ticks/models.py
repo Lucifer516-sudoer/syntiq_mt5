@@ -31,7 +31,7 @@ class Tick(BaseModel):
     last: float
     volume: int
     time_msc: int  # tick time in milliseconds
-    flags: int     # bitmask: see TICK_FLAG_* constants
+    flags: int  # bitmask: see TICK_FLAG_* constants
     volume_real: float
 
     @property

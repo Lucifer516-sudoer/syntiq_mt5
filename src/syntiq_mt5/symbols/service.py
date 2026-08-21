@@ -14,10 +14,13 @@ class SymbolService:
     ``mt5.symbol_info_tick()`` via ``call_mt5``, parses the raw structs
     into ``SymbolInfo`` / ``SymbolTick`` models, and returns ``Result[T]``.
     """
+
     def symbols_total(self) -> Result[int]:
         raw = call_mt5(mt5.symbols_total)
         if raw.data is None:
-            return Result.fail(raw.error, context="symbols_total", operation="symbols_total")
+            return Result.fail(
+                raw.error, context="symbols_total", operation="symbols_total"
+            )
         try:
             count = int(raw.data)
         except (TypeError, ValueError) as exc:
@@ -34,9 +37,15 @@ class SymbolService:
         return Result.ok(count, context="symbols_total", operation="symbols_total")
 
     def symbols_get(self, group: str | None = None) -> Result[list[str]]:
-        raw = call_mt5(mt5.symbols_get, group=group) if group else call_mt5(mt5.symbols_get)
+        raw = (
+            call_mt5(mt5.symbols_get, group=group)
+            if group
+            else call_mt5(mt5.symbols_get)
+        )
         if raw.data is None:
-            return Result.fail(raw.error, context="symbols_get", operation="symbols_get")
+            return Result.fail(
+                raw.error, context="symbols_get", operation="symbols_get"
+            )
         try:
             symbols = [str(s.name) for s in raw.data]
         except (AttributeError, TypeError) as exc:
@@ -55,7 +64,9 @@ class SymbolService:
     def symbol_select(self, symbol: str, enable: bool) -> Result[bool]:
         raw = call_mt5(mt5.symbol_select, symbol, enable)
         if raw.data is None:
-            return Result.fail(raw.error, context="symbol_select", operation="symbol_select")
+            return Result.fail(
+                raw.error, context="symbol_select", operation="symbol_select"
+            )
         try:
             success = bool(raw.data)
         except (TypeError, ValueError) as exc:
@@ -74,7 +85,9 @@ class SymbolService:
     def symbol_info(self, symbol: str) -> Result[SymbolInfo]:
         raw = call_mt5(mt5.symbol_info, symbol)
         if raw.data is None:
-            return Result.fail(raw.error, context="symbol_info", operation="symbol_info")
+            return Result.fail(
+                raw.error, context="symbol_info", operation="symbol_info"
+            )
         try:
             info = SymbolInfo(
                 custom=bool(raw.data.custom),
@@ -190,7 +203,9 @@ class SymbolService:
     def symbol_info_tick(self, symbol: str) -> Result[SymbolTick]:
         raw = call_mt5(mt5.symbol_info_tick, symbol)
         if raw.data is None:
-            return Result.fail(raw.error, context="symbol_info_tick", operation="symbol_info_tick")
+            return Result.fail(
+                raw.error, context="symbol_info_tick", operation="symbol_info_tick"
+            )
         try:
             tick = SymbolTick(
                 time=int(raw.data.time),

@@ -45,6 +45,7 @@ from syntiq_mt5.orders.models import HistoricalOrder, Order, TradeRequest, Trade
 from syntiq_mt5.orders.service import OrderService
 from syntiq_mt5.positions.models import Position
 from syntiq_mt5.positions.service import PositionService
+from syntiq_mt5.session import MT5 as _DirectMT5
 from syntiq_mt5.symbols.models import SymbolInfo, SymbolTick
 from syntiq_mt5.symbols.service import SymbolService
 from syntiq_mt5.terminal.models import TerminalInfo
@@ -53,7 +54,7 @@ from syntiq_mt5.ticks.models import Tick
 from syntiq_mt5.ticks.service import TickService
 
 
-class MetaTrader5Client:
+class _LegacyMetaTrader5Client:
     """Unified client for all MetaTrader 5 operations.
 
     Composes the individual service classes (connection, positions, orders,
@@ -75,6 +76,7 @@ class MetaTrader5Client:
         debug: When ``True``, each operation logs its name, outcome, and
             elapsed time at ``DEBUG`` level via the ``syntiq_mt5`` logger.
     """
+
     def __init__(self, *, debug: bool = False) -> None:
         """Initialise the client and instantiate all service objects.
 
@@ -96,7 +98,7 @@ class MetaTrader5Client:
         self._debug = debug
         self._logger = logging.getLogger("syntiq_mt5")
 
-    def __enter__(self) -> MetaTrader5Client:
+    def __enter__(self) -> _LegacyMetaTrader5Client:
         """Support ``with MetaTrader5Client() as client:`` usage."""
         return self
 
@@ -104,9 +106,13 @@ class MetaTrader5Client:
         """Call ``shutdown()`` automatically when leaving the context block."""
         shutdown_result = self.shutdown()
         if self._debug and not shutdown_result.success:
-            self._logger.error("[MT5] shutdown | failure | code=%s", shutdown_result.error_code)
+            self._logger.error(
+                "[MT5] shutdown | failure | code=%s", shutdown_result.error_code
+            )
 
-    def _log_result(self, name: str, result: Result[object] | Result[None], started: float) -> None:
+    def _log_result(
+        self, name: str, result: Result[object] | Result[None], started: float
+    ) -> None:
         """Emit a DEBUG log entry for a completed operation.
 
         Only active when ``debug=True``.  Logs the operation name, success
@@ -117,7 +123,9 @@ class MetaTrader5Client:
         elapsed_ms = int((perf_counter() - started) * 1000)
         status = "success" if result.success else "failure"
         code = 0 if result.success else result.error_code
-        self._logger.debug("[MT5] %s | %s | code=%s | %sms", name, status, code, elapsed_ms)
+        self._logger.debug(
+            "[MT5] %s | %s | code=%s | %sms", name, status, code, elapsed_ms
+        )
 
     def _guard_initialized(self, operation: str) -> Result[None] | None:
         """Return a failure result if the client has not been initialised.
@@ -129,7 +137,9 @@ class MetaTrader5Client:
         if self._initialized:
             return None
         return Result.fail(
-            MT5ErrorInfo(code=-10, message="Client not initialized. Call initialize() first."),
+            MT5ErrorInfo(
+                code=-10, message="Client not initialized. Call initialize() first."
+            ),
             context=operation,
             operation=operation,
         )
@@ -146,7 +156,8 @@ class MetaTrader5Client:
         return Result.fail(
             MT5ErrorInfo(
                 code=guard.error_code or -10,
-                message=guard.error_message or "Client not initialized. Call initialize() first.",
+                message=guard.error_message
+                or "Client not initialized. Call initialize() first.",
             ),
             context=operation,
             operation=operation,
@@ -220,7 +231,9 @@ class MetaTrader5Client:
             return Result[tuple[int, int, str]].model_validate(guard.model_dump())
         started = perf_counter()
         result = self.connection.version()
-        self._log_result("version", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "version", Result[object].model_validate(result.model_dump()), started
+        )
         return result
 
     def positions(self, symbol: str | None = None) -> Result[list[Position]]:
@@ -237,7 +250,9 @@ class MetaTrader5Client:
             return Result[list[Position]].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._positions.positions(symbol=symbol)
-        self._log_result("positions_get", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "positions_get", Result[object].model_validate(result.model_dump()), started
+        )
         return result
 
     def positions_total(self) -> Result[int]:
@@ -251,10 +266,16 @@ class MetaTrader5Client:
             return Result[int].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._positions.positions_total()
-        self._log_result("positions_total", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "positions_total",
+            Result[object].model_validate(result.model_dump()),
+            started,
+        )
         return result
 
-    def get_candles(self, symbol: str, timeframe: int, count: int) -> Result[list[Candle]]:
+    def get_candles(
+        self, symbol: str, timeframe: int, count: int
+    ) -> Result[list[Candle]]:
         """Retrieve the most recent OHLCV candles for a symbol.
 
         Args:
@@ -269,9 +290,13 @@ class MetaTrader5Client:
         if guard is not None:
             return Result[list[Candle]].model_validate(guard.model_dump())
         started = perf_counter()
-        result = self.market.get_candles(symbol=symbol, timeframe=timeframe, count=count)
+        result = self.market.get_candles(
+            symbol=symbol, timeframe=timeframe, count=count
+        )
         self._log_result(
-            "copy_rates_from_pos", Result[object].model_validate(result.model_dump()), started
+            "copy_rates_from_pos",
+            Result[object].model_validate(result.model_dump()),
+            started,
         )
         return result
 
@@ -289,7 +314,9 @@ class MetaTrader5Client:
             return Result[AccountInfo].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._account.account_info()
-        self._log_result("account_info", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "account_info", Result[object].model_validate(result.model_dump()), started
+        )
         return result
 
     # ── Terminal ──────────────────────────────────────────────────────────────
@@ -306,7 +333,9 @@ class MetaTrader5Client:
             return Result[TerminalInfo].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._terminal.terminal_info()
-        self._log_result("terminal_info", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "terminal_info", Result[object].model_validate(result.model_dump()), started
+        )
         return result
 
     # ── Symbols ───────────────────────────────────────────────────────────────
@@ -322,7 +351,9 @@ class MetaTrader5Client:
             return Result[int].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._symbols.symbols_total()
-        self._log_result("symbols_total", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "symbols_total", Result[object].model_validate(result.model_dump()), started
+        )
         return result
 
     def symbols_get(self, group: str | None = None) -> Result[list[str]]:
@@ -340,7 +371,9 @@ class MetaTrader5Client:
             return Result[list[str]].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._symbols.symbols_get(group=group)
-        self._log_result("symbols_get", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "symbols_get", Result[object].model_validate(result.model_dump()), started
+        )
         return result
 
     def symbol_select(self, symbol: str, enable: bool) -> Result[bool]:
@@ -358,7 +391,9 @@ class MetaTrader5Client:
             return Result[bool].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._symbols.symbol_select(symbol=symbol, enable=enable)
-        self._log_result("symbol_select", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "symbol_select", Result[object].model_validate(result.model_dump()), started
+        )
         return result
 
     def symbol_info(self, symbol: str) -> Result[SymbolInfo]:
@@ -375,7 +410,9 @@ class MetaTrader5Client:
             return Result[SymbolInfo].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._symbols.symbol_info(symbol=symbol)
-        self._log_result("symbol_info", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "symbol_info", Result[object].model_validate(result.model_dump()), started
+        )
         return result
 
     def symbol_info_tick(self, symbol: str) -> Result[SymbolTick]:
@@ -392,7 +429,11 @@ class MetaTrader5Client:
             return Result[SymbolTick].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._symbols.symbol_info_tick(symbol=symbol)
-        self._log_result("symbol_info_tick", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "symbol_info_tick",
+            Result[object].model_validate(result.model_dump()),
+            started,
+        )
         return result
 
     # ── Market Book ───────────────────────────────────────────────────────────
@@ -413,7 +454,11 @@ class MetaTrader5Client:
             return Result[bool].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._market_book.market_book_add(symbol=symbol)
-        self._log_result("market_book_add", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "market_book_add",
+            Result[object].model_validate(result.model_dump()),
+            started,
+        )
         return result
 
     def market_book_get(self, symbol: str) -> Result[list[BookEntry]]:
@@ -432,7 +477,11 @@ class MetaTrader5Client:
             return Result[list[BookEntry]].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._market_book.market_book_get(symbol=symbol)
-        self._log_result("market_book_get", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "market_book_get",
+            Result[object].model_validate(result.model_dump()),
+            started,
+        )
         return result
 
     def market_book_release(self, symbol: str) -> Result[bool]:
@@ -449,7 +498,11 @@ class MetaTrader5Client:
             return Result[bool].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._market_book.market_book_release(symbol=symbol)
-        self._log_result("market_book_release", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "market_book_release",
+            Result[object].model_validate(result.model_dump()),
+            started,
+        )
         return result
 
     # ── Historical Rates ──────────────────────────────────────────────────────
@@ -475,7 +528,11 @@ class MetaTrader5Client:
         result = self.market.copy_rates_from(
             symbol=symbol, timeframe=timeframe, date_from=date_from, count=count
         )
-        self._log_result("copy_rates_from", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "copy_rates_from",
+            Result[object].model_validate(result.model_dump()),
+            started,
+        )
         return result
 
     def copy_rates_range(
@@ -499,7 +556,11 @@ class MetaTrader5Client:
         result = self.market.copy_rates_range(
             symbol=symbol, timeframe=timeframe, date_from=date_from, date_to=date_to
         )
-        self._log_result("copy_rates_range", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "copy_rates_range",
+            Result[object].model_validate(result.model_dump()),
+            started,
+        )
         return result
 
     # ── Tick Data ─────────────────────────────────────────────────────────────
@@ -525,7 +586,11 @@ class MetaTrader5Client:
         result = self._ticks.copy_ticks_from(
             symbol=symbol, date_from=date_from, count=count, flags=flags
         )
-        self._log_result("copy_ticks_from", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "copy_ticks_from",
+            Result[object].model_validate(result.model_dump()),
+            started,
+        )
         return result
 
     def copy_ticks_range(
@@ -549,7 +614,11 @@ class MetaTrader5Client:
         result = self._ticks.copy_ticks_range(
             symbol=symbol, date_from=date_from, date_to=date_to, flags=flags
         )
-        self._log_result("copy_ticks_range", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "copy_ticks_range",
+            Result[object].model_validate(result.model_dump()),
+            started,
+        )
         return result
 
     # ── Orders ────────────────────────────────────────────────────────────────
@@ -565,11 +634,16 @@ class MetaTrader5Client:
             return Result[int].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._orders.orders_total()
-        self._log_result("orders_total", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "orders_total", Result[object].model_validate(result.model_dump()), started
+        )
         return result
 
     def orders_get(
-        self, symbol: str | None = None, group: str | None = None, ticket: int | None = None
+        self,
+        symbol: str | None = None,
+        group: str | None = None,
+        ticket: int | None = None,
     ) -> Result[list[Order]]:
         """Retrieve active pending orders with optional filtering.
 
@@ -589,10 +663,14 @@ class MetaTrader5Client:
             return Result[list[Order]].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._orders.orders_get(symbol=symbol, group=group, ticket=ticket)
-        self._log_result("orders_get", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "orders_get", Result[object].model_validate(result.model_dump()), started
+        )
         return result
 
-    def order_calc_margin(self, action: int, symbol: str, volume: float, price: float) -> Result[float]:
+    def order_calc_margin(
+        self, action: int, symbol: str, volume: float, price: float
+    ) -> Result[float]:
         """Calculate the margin required for a hypothetical order.
 
         Args:
@@ -608,12 +686,23 @@ class MetaTrader5Client:
         if guard is not None:
             return Result[float].model_validate(guard.model_dump())
         started = perf_counter()
-        result = self._orders.order_calc_margin(action=action, symbol=symbol, volume=volume, price=price)
-        self._log_result("order_calc_margin", Result[object].model_validate(result.model_dump()), started)
+        result = self._orders.order_calc_margin(
+            action=action, symbol=symbol, volume=volume, price=price
+        )
+        self._log_result(
+            "order_calc_margin",
+            Result[object].model_validate(result.model_dump()),
+            started,
+        )
         return result
 
     def order_calc_profit(
-        self, action: int, symbol: str, volume: float, price_open: float, price_close: float
+        self,
+        action: int,
+        symbol: str,
+        volume: float,
+        price_open: float,
+        price_close: float,
     ) -> Result[float]:
         """Calculate the profit for a hypothetical trade.
 
@@ -632,9 +721,17 @@ class MetaTrader5Client:
             return Result[float].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._orders.order_calc_profit(
-            action=action, symbol=symbol, volume=volume, price_open=price_open, price_close=price_close
+            action=action,
+            symbol=symbol,
+            volume=volume,
+            price_open=price_open,
+            price_close=price_close,
         )
-        self._log_result("order_calc_profit", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "order_calc_profit",
+            Result[object].model_validate(result.model_dump()),
+            started,
+        )
         return result
 
     def order_check(self, request: TradeRequest) -> Result[TradeResult]:
@@ -654,7 +751,9 @@ class MetaTrader5Client:
             return Result[TradeResult].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._orders.order_check(request=request)
-        self._log_result("order_check", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "order_check", Result[object].model_validate(result.model_dump()), started
+        )
         return result
 
     def order_send(self, request: TradeRequest) -> Result[TradeResult]:
@@ -675,12 +774,16 @@ class MetaTrader5Client:
             return Result[TradeResult].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._orders.order_send(request=request)
-        self._log_result("order_send", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "order_send", Result[object].model_validate(result.model_dump()), started
+        )
         return result
 
     # ── History ───────────────────────────────────────────────────────────────
 
-    def history_orders_total(self, date_from: datetime, date_to: datetime) -> Result[int]:
+    def history_orders_total(
+        self, date_from: datetime, date_to: datetime
+    ) -> Result[int]:
         """Return the number of historical orders in a date range.
 
         Args:
@@ -694,8 +797,14 @@ class MetaTrader5Client:
         if guard is not None:
             return Result[int].model_validate(guard.model_dump())
         started = perf_counter()
-        result = self._history.history_orders_total(date_from=date_from, date_to=date_to)
-        self._log_result("history_orders_total", Result[object].model_validate(result.model_dump()), started)
+        result = self._history.history_orders_total(
+            date_from=date_from, date_to=date_to
+        )
+        self._log_result(
+            "history_orders_total",
+            Result[object].model_validate(result.model_dump()),
+            started,
+        )
         return result
 
     def history_orders_get(
@@ -727,12 +836,22 @@ class MetaTrader5Client:
             return Result[list[HistoricalOrder]].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._history.history_orders_get(
-            date_from=date_from, date_to=date_to, group=group, ticket=ticket, position=position
+            date_from=date_from,
+            date_to=date_to,
+            group=group,
+            ticket=ticket,
+            position=position,
         )
-        self._log_result("history_orders_get", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "history_orders_get",
+            Result[object].model_validate(result.model_dump()),
+            started,
+        )
         return result
 
-    def history_deals_total(self, date_from: datetime, date_to: datetime) -> Result[int]:
+    def history_deals_total(
+        self, date_from: datetime, date_to: datetime
+    ) -> Result[int]:
         """Return the number of deals in a date range.
 
         Args:
@@ -747,7 +866,11 @@ class MetaTrader5Client:
             return Result[int].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._history.history_deals_total(date_from=date_from, date_to=date_to)
-        self._log_result("history_deals_total", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "history_deals_total",
+            Result[object].model_validate(result.model_dump()),
+            started,
+        )
         return result
 
     def history_deals_get(
@@ -778,7 +901,20 @@ class MetaTrader5Client:
             return Result[list[Deal]].model_validate(guard.model_dump())
         started = perf_counter()
         result = self._history.history_deals_get(
-            date_from=date_from, date_to=date_to, group=group, ticket=ticket, position=position
+            date_from=date_from,
+            date_to=date_to,
+            group=group,
+            ticket=ticket,
+            position=position,
         )
-        self._log_result("history_deals_get", Result[object].model_validate(result.model_dump()), started)
+        self._log_result(
+            "history_deals_get",
+            Result[object].model_validate(result.model_dump()),
+            started,
+        )
         return result
+
+
+# The former Result-based client remains private only so migration tests can
+# exercise its historical behavior. Public imports resolve to the direct session.
+MetaTrader5Client = _DirectMT5

@@ -1,8 +1,8 @@
-from pydantic import ValidationError, SecretStr
+from pydantic import SecretStr, ValidationError
 
 from syntiq_mt5._core.errors import MT5ErrorInfo
 from syntiq_mt5._core.execution import Result
-from syntiq_mt5.client import MetaTrader5Client
+from syntiq_mt5.client import _LegacyMetaTrader5Client as MetaTrader5Client
 from syntiq_mt5.connection.models import LoginCredential
 
 

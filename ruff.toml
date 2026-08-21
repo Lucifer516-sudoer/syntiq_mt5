@@ -1,5 +1,5 @@
 line-length = 88
-target-version = "py310"
+target-version = "py312"
 
 [lint]
 select = [
@@ -11,7 +11,6 @@ select = [
     "B",   # bugbear (real mistakes)
     "C4",  # comprehensions
     "SIM", # simplifications
-    "ARG", # unused arguments
     "RET", # return issues
     "PTH", # pathlib over os
     "RUF"  # ruff-specific rules
@@ -19,10 +18,14 @@ select = [
 
 ignore = [
     "E501",  # handled by line-length
+    "RUF002",  # prose may use typographic punctuation
+    "RUF003",  # comments may use typographic punctuation
+    "UP046",  # Pydantic generic models still use Generic[T]
 ]
 
 [lint.per-file-ignores]
 "__init__.py" = ["F401"]  # allow re-exports
+"tests/**/*.py" = ["ARG", "B011", "C408", "S101"]
 
 [format]
 quote-style = "double"

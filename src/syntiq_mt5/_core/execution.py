@@ -16,7 +16,7 @@ Typical usage::
 
 from __future__ import annotations
 
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, cast
 
 from pydantic import BaseModel, model_validator
 
@@ -58,6 +58,8 @@ class Result(BaseModel, Generic[T]):
                 ``error_code`` / ``error_message`` are missing.
         """
         if self.success:
+            if self.error_code is not None or self.error_message is not None:
+                raise ValueError("Successful Result cannot contain error fields")
             return self
         if self.data is not None:
             raise ValueError("Result.data must be None when success=False")
@@ -107,3 +109,15 @@ class Result(BaseModel, Generic[T]):
             context=context,
             operation=operation,
         )
+
+    def unwrap(self) -> T:
+        """Return success data or raise an ``MT5Error`` with full context."""
+        if not self.success:
+            from .errors import MT5Error
+
+            raise MT5Error(
+                self.operation or self.context or "MT5 operation",
+                self.error_code or -1,
+                self.error_message or "unknown error",
+            )
+        return cast(T, self.data)

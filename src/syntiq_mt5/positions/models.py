@@ -43,7 +43,7 @@ class Position(BaseModel):
 
     ticket: int
     time: int = 0
-    time_msc: int = 0       # open time in milliseconds
+    time_msc: int = 0  # open time in milliseconds
     time_update: int = 0
     time_update_msc: int = 0  # last update time in milliseconds
     type: PositionType

@@ -1,13 +1,14 @@
 from types import SimpleNamespace
 
+from pydantic import SecretStr
+
+import syntiq_mt5._core.raw as raw_mod
 import syntiq_mt5.connection.service as connection_service
 import syntiq_mt5.market.symbols as market_service
 import syntiq_mt5.positions.service as positions_service
-import syntiq_mt5._core.raw as raw_mod
+from syntiq_mt5.client import _LegacyMetaTrader5Client as MetaTrader5Client
 from syntiq_mt5.connection.models import LoginCredential
-from syntiq_mt5.client import MetaTrader5Client
 from syntiq_mt5.positions.models import Position
-from pydantic import SecretStr
 
 
 class FakeMT5:
@@ -47,11 +48,29 @@ def test_connection_failure(monkeypatch):
 
 def test_position_parsing_and_pricing(monkeypatch):
     fake = FakeMT5()
-    fake.positions_get = lambda **_: [SimpleNamespace(
-        ticket=1, symbol="EURUSD", price_open=1.1, price_current=1.101, tp=1.102, sl=1.0, volume=0.1, type=0,
-        time=1000, time_msc=1000000, time_update=1001, time_update_msc=1001000,
-        magic=0, identifier=1, reason=0, swap=0.0, profit=10.0, comment="", external_id=""
-    )]
+    fake.positions_get = lambda **_: [
+        SimpleNamespace(
+            ticket=1,
+            symbol="EURUSD",
+            price_open=1.1,
+            price_current=1.101,
+            tp=1.102,
+            sl=1.0,
+            volume=0.1,
+            type=0,
+            time=1000,
+            time_msc=1000000,
+            time_update=1001,
+            time_update_msc=1001000,
+            magic=0,
+            identifier=1,
+            reason=0,
+            swap=0.0,
+            profit=10.0,
+            comment="",
+            external_id="",
+        )
+    ]
     fake.symbol_info = lambda s: SimpleNamespace(digits=5, point=0.00001)
     monkeypatch.setattr(positions_service, "mt5", fake)
     monkeypatch.setattr(raw_mod, "mt5", fake)
@@ -64,7 +83,18 @@ def test_position_parsing_and_pricing(monkeypatch):
 
 def test_candle_conversion(monkeypatch):
     fake = FakeMT5()
-    fake.copy_rates_from_pos = lambda *args: [{"time": 1, "open": 1.0, "high": 2.0, "low": 0.5, "close": 1.5, "tick_volume": 100, "spread": 2, "real_volume": 50}]
+    fake.copy_rates_from_pos = lambda *args: [
+        {
+            "time": 1,
+            "open": 1.0,
+            "high": 2.0,
+            "low": 0.5,
+            "close": 1.5,
+            "tick_volume": 100,
+            "spread": 2,
+            "real_volume": 50,
+        }
+    ]
     monkeypatch.setattr(market_service, "mt5", fake)
     monkeypatch.setattr(raw_mod, "mt5", fake)
     svc = market_service.MarketService()
@@ -97,7 +127,9 @@ def test_empty_positions_are_success(monkeypatch):
 
 def test_candle_malformed_payload_returns_failure(monkeypatch):
     fake = FakeMT5()
-    fake.copy_rates_from_pos = lambda *args: [{"time": 1, "open": 1.0, "high": 2.0, "low": 0.5}]
+    fake.copy_rates_from_pos = lambda *args: [
+        {"time": 1, "open": 1.0, "high": 2.0, "low": 0.5}
+    ]
     monkeypatch.setattr(market_service, "mt5", fake)
     monkeypatch.setattr(raw_mod, "mt5", fake)
     res = market_service.MarketService().get_candles("EURUSD", 1, 1)

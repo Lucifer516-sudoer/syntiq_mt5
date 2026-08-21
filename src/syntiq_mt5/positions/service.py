@@ -5,6 +5,7 @@ from __future__ import annotations
 from syntiq_mt5._core.execution import Result
 from syntiq_mt5._core.mt5_import import mt5
 from syntiq_mt5._core.raw import call_mt5
+from syntiq_mt5.enums import PositionReason, PositionType
 from syntiq_mt5.positions.models import Position
 
 
@@ -34,16 +35,29 @@ class PositionService:
             (may be empty), or a failure result if the MT5 call fails or the
             payload cannot be parsed.
         """
-        raw = call_mt5(mt5.positions_get, symbol=symbol) if symbol else call_mt5(mt5.positions_get)
+        raw = (
+            call_mt5(mt5.positions_get, symbol=symbol)
+            if symbol
+            else call_mt5(mt5.positions_get)
+        )
         if raw.data is None:
-            return Result.fail(raw.error, context="positions_get", operation="positions_get")
+            return Result.fail(
+                raw.error, context="positions_get", operation="positions_get"
+            )
         rows = list(raw.data)
         symbols = {row.symbol for row in rows if row.symbol not in self._symbol_cache}
         for sym in symbols:
             info_raw = call_mt5(mt5.symbol_info, sym)
             if info_raw.data is None:
-                return Result.fail(info_raw.error, context=f"symbol_info:{sym}", operation="symbol_info")
-            self._symbol_cache[sym] = (int(info_raw.data.digits), float(info_raw.data.point))
+                return Result.fail(
+                    info_raw.error,
+                    context=f"symbol_info:{sym}",
+                    operation="symbol_info",
+                )
+            self._symbol_cache[sym] = (
+                int(info_raw.data.digits),
+                float(info_raw.data.point),
+            )
 
         try:
             parsed = [
@@ -53,10 +67,10 @@ class PositionService:
                     time_msc=int(row.time_msc),
                     time_update=int(row.time_update),
                     time_update_msc=int(row.time_update_msc),
-                    type=int(row.type),
+                    type=PositionType(int(row.type)),
                     magic=int(row.magic),
                     identifier=int(row.identifier),
-                    reason=int(row.reason),
+                    reason=PositionReason(int(row.reason)),
                     volume=float(row.volume),
                     price_open=float(row.price_open),
                     sl=float(row.sl),
@@ -94,7 +108,9 @@ class PositionService:
         """
         raw = call_mt5(mt5.positions_total)
         if raw.data is None:
-            return Result.fail(raw.error, context="positions_total", operation="positions_total")
+            return Result.fail(
+                raw.error, context="positions_total", operation="positions_total"
+            )
         try:
             count = int(raw.data)
         except (TypeError, ValueError) as exc:

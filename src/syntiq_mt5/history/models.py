@@ -60,7 +60,7 @@ class Deal(BaseModel):
         Returns:
             Net profit in account currency.
         """
-        return self.profit + self.commission + self.swap - self.fee
+        return self.profit + self.commission + self.swap + self.fee
 
     @property
     def is_entry(self) -> bool:

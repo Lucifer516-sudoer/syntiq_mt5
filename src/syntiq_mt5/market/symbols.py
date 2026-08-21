@@ -23,7 +23,9 @@ class MarketService:
     parser handles both shapes transparently.
     """
 
-    def get_candles(self, symbol: str, timeframe: int, count: int) -> Result[list[Candle]]:
+    def get_candles(
+        self, symbol: str, timeframe: int, count: int
+    ) -> Result[list[Candle]]:
         """Retrieve the most recent candles for a symbol.
 
         Calls ``mt5.copy_rates_from_pos()`` starting at bar index 0
@@ -41,7 +43,11 @@ class MarketService:
         """
         raw = call_mt5(mt5.copy_rates_from_pos, symbol, timeframe, 0, count)
         if raw.data is None:
-            return Result.fail(raw.error, context="copy_rates_from_pos", operation="copy_rates_from_pos")
+            return Result.fail(
+                raw.error,
+                context="copy_rates_from_pos",
+                operation="copy_rates_from_pos",
+            )
         try:
             candles = [
                 Candle(
@@ -50,9 +56,17 @@ class MarketService:
                     high=float(row.high if hasattr(row, "high") else row["high"]),
                     low=float(row.low if hasattr(row, "low") else row["low"]),
                     close=float(row.close if hasattr(row, "close") else row["close"]),
-                    tick_volume=int(row.tick_volume if hasattr(row, "tick_volume") else row["tick_volume"]),
+                    tick_volume=int(
+                        row.tick_volume
+                        if hasattr(row, "tick_volume")
+                        else row["tick_volume"]
+                    ),
                     spread=int(row.spread if hasattr(row, "spread") else row["spread"]),
-                    real_volume=int(row.real_volume if hasattr(row, "real_volume") else row["real_volume"]),
+                    real_volume=int(
+                        row.real_volume
+                        if hasattr(row, "real_volume")
+                        else row["real_volume"]
+                    ),
                 )
                 for row in raw.data
             ]
@@ -67,7 +81,9 @@ class MarketService:
                 context="copy_rates_from_pos",
                 operation="copy_rates_from_pos",
             )
-        return Result.ok(candles, context="copy_rates_from_pos", operation="copy_rates_from_pos")
+        return Result.ok(
+            candles, context="copy_rates_from_pos", operation="copy_rates_from_pos"
+        )
 
     def copy_rates_from(
         self, symbol: str, timeframe: int, date_from: datetime, count: int
@@ -86,7 +102,9 @@ class MarketService:
         """
         raw = call_mt5(mt5.copy_rates_from, symbol, timeframe, date_from, count)
         if raw.data is None:
-            return Result.fail(raw.error, context="copy_rates_from", operation="copy_rates_from")
+            return Result.fail(
+                raw.error, context="copy_rates_from", operation="copy_rates_from"
+            )
         try:
             candles = [
                 Candle(
@@ -95,9 +113,17 @@ class MarketService:
                     high=float(row.high if hasattr(row, "high") else row["high"]),
                     low=float(row.low if hasattr(row, "low") else row["low"]),
                     close=float(row.close if hasattr(row, "close") else row["close"]),
-                    tick_volume=int(row.tick_volume if hasattr(row, "tick_volume") else row["tick_volume"]),
+                    tick_volume=int(
+                        row.tick_volume
+                        if hasattr(row, "tick_volume")
+                        else row["tick_volume"]
+                    ),
                     spread=int(row.spread if hasattr(row, "spread") else row["spread"]),
-                    real_volume=int(row.real_volume if hasattr(row, "real_volume") else row["real_volume"]),
+                    real_volume=int(
+                        row.real_volume
+                        if hasattr(row, "real_volume")
+                        else row["real_volume"]
+                    ),
                 )
                 for row in raw.data
             ]
@@ -112,7 +138,9 @@ class MarketService:
                 context="copy_rates_from",
                 operation="copy_rates_from",
             )
-        return Result.ok(candles, context="copy_rates_from", operation="copy_rates_from")
+        return Result.ok(
+            candles, context="copy_rates_from", operation="copy_rates_from"
+        )
 
     def copy_rates_range(
         self, symbol: str, timeframe: int, date_from: datetime, date_to: datetime
@@ -131,7 +159,9 @@ class MarketService:
         """
         raw = call_mt5(mt5.copy_rates_range, symbol, timeframe, date_from, date_to)
         if raw.data is None:
-            return Result.fail(raw.error, context="copy_rates_range", operation="copy_rates_range")
+            return Result.fail(
+                raw.error, context="copy_rates_range", operation="copy_rates_range"
+            )
         try:
             candles = [
                 Candle(
@@ -140,9 +170,17 @@ class MarketService:
                     high=float(row.high if hasattr(row, "high") else row["high"]),
                     low=float(row.low if hasattr(row, "low") else row["low"]),
                     close=float(row.close if hasattr(row, "close") else row["close"]),
-                    tick_volume=int(row.tick_volume if hasattr(row, "tick_volume") else row["tick_volume"]),
+                    tick_volume=int(
+                        row.tick_volume
+                        if hasattr(row, "tick_volume")
+                        else row["tick_volume"]
+                    ),
                     spread=int(row.spread if hasattr(row, "spread") else row["spread"]),
-                    real_volume=int(row.real_volume if hasattr(row, "real_volume") else row["real_volume"]),
+                    real_volume=int(
+                        row.real_volume
+                        if hasattr(row, "real_volume")
+                        else row["real_volume"]
+                    ),
                 )
                 for row in raw.data
             ]
@@ -157,4 +195,6 @@ class MarketService:
                 context="copy_rates_range",
                 operation="copy_rates_range",
             )
-        return Result.ok(candles, context="copy_rates_range", operation="copy_rates_range")
+        return Result.ok(
+            candles, context="copy_rates_range", operation="copy_rates_range"
+        )

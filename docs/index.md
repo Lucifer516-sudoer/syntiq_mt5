@@ -2,7 +2,13 @@
 hide:
   - navigation
   - toc
+search:
+  exclude: true
 ---
+
+<meta http-equiv="refresh" content="0; url=home/">
+
+The documentation home has moved to [the developer guide](home.md).
 
 <div class="hero" markdown>
 

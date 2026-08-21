@@ -12,6 +12,12 @@ from pydantic import BaseModel
 class MT5Error(Exception):
     """Base exception for all SDK-level errors."""
 
+    def __init__(self, operation: str, code: int, message: str) -> None:
+        self.operation = operation
+        self.code = code
+        self.message = message
+        super().__init__(f"{operation} failed [{code}]: {message}")
+
 
 class MT5ConnectionError(MT5Error):
     """Raised when a connection lifecycle operation fails unrecoverably."""
@@ -19,6 +25,22 @@ class MT5ConnectionError(MT5Error):
 
 class MT5ExecutionError(MT5Error):
     """Raised when a data retrieval or trade execution fails unrecoverably."""
+
+
+class MT5PlatformError(MT5Error):
+    """Raised when the native MetaTrader5 package is unavailable."""
+
+
+class MT5CallError(MT5Error):
+    """Raised when MT5 returns an operation-specific failure sentinel."""
+
+
+class MT5PayloadError(MT5Error):
+    """Raised when MT5 returns a payload that violates its documented shape."""
+
+
+class MT5StateError(MT5Error):
+    """Raised when an operation is invalid for the client lifecycle state."""
 
 
 class MT5ErrorInfo(BaseModel):

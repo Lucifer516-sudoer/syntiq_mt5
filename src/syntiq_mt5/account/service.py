@@ -13,10 +13,13 @@ class AccountService:
     ``AccountInfo`` struct into a typed model, and returns
     ``Result[AccountInfo]``.
     """
+
     def account_info(self) -> Result[AccountInfo]:
         raw = call_mt5(mt5.account_info)
         if raw.data is None:
-            return Result.fail(raw.error, context="account_info", operation="account_info")
+            return Result.fail(
+                raw.error, context="account_info", operation="account_info"
+            )
         try:
             info = AccountInfo(
                 login=int(raw.data.login),

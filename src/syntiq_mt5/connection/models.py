@@ -21,6 +21,8 @@ class LoginCredential(BaseModel):
     password: SecretStr
     server: str
     path: str | None = None
+    timeout: int = 60_000
+    portable: bool = False
 
 
 #: Alias kept for backward compatibility.

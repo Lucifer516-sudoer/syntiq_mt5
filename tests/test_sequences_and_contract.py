@@ -4,12 +4,12 @@ from types import SimpleNamespace
 from pydantic import SecretStr, ValidationError
 
 import syntiq_mt5
+import syntiq_mt5._core.raw as raw_mod
 import syntiq_mt5.connection.service as connection_service
 import syntiq_mt5.market.symbols as market_service
 import syntiq_mt5.positions.service as positions_service
-import syntiq_mt5._core.raw as raw_mod
 from syntiq_mt5._core.execution import Result
-from syntiq_mt5.client import MetaTrader5Client
+from syntiq_mt5.client import _LegacyMetaTrader5Client as MetaTrader5Client
 from syntiq_mt5.connection.models import LoginCredential
 
 
@@ -70,7 +70,18 @@ class SeqMT5:
 
     def copy_rates_from_pos(self, *args):
         self.err = (0, "OK")
-        return [{"time": 1, "open": 1.0, "high": 1.1, "low": 0.9, "close": 1.05, "tick_volume": 100, "spread": 2, "real_volume": 50}]
+        return [
+            {
+                "time": 1,
+                "open": 1.0,
+                "high": 1.1,
+                "low": 0.9,
+                "close": 1.05,
+                "tick_volume": 100,
+                "spread": 2,
+                "real_volume": 50,
+            }
+        ]
 
 
 def test_realistic_flow_with_retry_and_shutdown(monkeypatch):
@@ -113,12 +124,28 @@ def test_multiple_positions_calls_are_stable(monkeypatch):
 
 def test_pip_variations_and_direction_awareness():
     eur = syntiq_mt5.Position(
-        ticket=1, symbol="EURUSD", price_open=1.1000, price_current=1.1010, tp=1.1020, sl=1.0,
-        volume=0.1, digits=5, point=0.00001, type=0
+        ticket=1,
+        symbol="EURUSD",
+        price_open=1.1000,
+        price_current=1.1010,
+        tp=1.1020,
+        sl=1.0,
+        volume=0.1,
+        digits=5,
+        point=0.00001,
+        type=0,
     )
     jpy = syntiq_mt5.Position(
-        ticket=2, symbol="USDJPY", price_open=150.00, price_current=149.90, tp=149.80, sl=151.0,
-        volume=0.1, digits=3, point=0.001, type=1
+        ticket=2,
+        symbol="USDJPY",
+        price_open=150.00,
+        price_current=149.90,
+        tp=149.80,
+        sl=151.0,
+        volume=0.1,
+        digits=3,
+        point=0.001,
+        type=1,
     )
     assert eur.pip_size == 0.0001
     assert round(eur.pips_profit, 2) == 10.0
@@ -130,16 +157,25 @@ def test_pip_variations_and_direction_awareness():
 
 def test_position_tp_zero_edge_case():
     p = syntiq_mt5.Position(
-        ticket=3, symbol="EURUSD", price_open=1.0, price_current=1.0, tp=0.0, sl=0.0,
-        volume=0.1, digits=5, point=0.00001, type=0
+        ticket=3,
+        symbol="EURUSD",
+        price_open=1.0,
+        price_current=1.0,
+        tp=0.0,
+        sl=0.0,
+        volume=0.1,
+        digits=5,
+        point=0.00001,
+        type=0,
     )
     assert p.pips_to_tp == 0.0
 
 
-def test_public_api_and_signatures_are_stable():
+def test_public_api_exports_direct_session():
     assert hasattr(syntiq_mt5, "MetaTrader5Client")
+    assert hasattr(syntiq_mt5, "MT5")
     assert hasattr(syntiq_mt5, "LoginCredential")
-    assert hasattr(syntiq_mt5, "Result")
+    assert not hasattr(syntiq_mt5, "Result")
     assert hasattr(syntiq_mt5, "Position")
     assert hasattr(syntiq_mt5, "Candle")
 

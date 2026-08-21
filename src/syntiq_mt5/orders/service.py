@@ -3,6 +3,7 @@ from __future__ import annotations
 from syntiq_mt5._core.execution import Result
 from syntiq_mt5._core.mt5_import import mt5
 from syntiq_mt5._core.raw import call_mt5
+from syntiq_mt5.enums import OrderFilling, OrderReason, OrderState, OrderTime, OrderType
 from syntiq_mt5.orders.models import Order, TradeRequest, TradeResult
 
 
@@ -14,10 +15,13 @@ class OrderService:
     ``order_send``) via ``call_mt5``, parses raw structs into ``Order``
     and ``TradeResult`` models, and returns ``Result[T]``.
     """
+
     def orders_total(self) -> Result[int]:
         raw = call_mt5(mt5.orders_total)
         if raw.data is None:
-            return Result.fail(raw.error, context="orders_total", operation="orders_total")
+            return Result.fail(
+                raw.error, context="orders_total", operation="orders_total"
+            )
         try:
             count = int(raw.data)
         except (TypeError, ValueError) as exc:
@@ -33,7 +37,12 @@ class OrderService:
             )
         return Result.ok(count, context="orders_total", operation="orders_total")
 
-    def orders_get(self, symbol: str | None = None, group: str | None = None, ticket: int | None = None) -> Result[list[Order]]:
+    def orders_get(
+        self,
+        symbol: str | None = None,
+        group: str | None = None,
+        ticket: int | None = None,
+    ) -> Result[list[Order]]:
         if symbol:
             raw = call_mt5(mt5.orders_get, symbol=symbol)
         elif group:
@@ -55,14 +64,14 @@ class OrderService:
                     time_done=int(order.time_done),
                     time_done_msc=int(order.time_done_msc),
                     time_expiration=int(order.time_expiration),
-                    type=int(order.type),
-                    type_time=int(order.type_time),
-                    type_filling=int(order.type_filling),
-                    state=int(order.state),
+                    type=OrderType(int(order.type)),
+                    type_time=OrderTime(int(order.type_time)),
+                    type_filling=OrderFilling(int(order.type_filling)),
+                    state=OrderState(int(order.state)),
                     magic=int(order.magic),
                     position_id=int(order.position_id),
                     position_by_id=int(order.position_by_id),
-                    reason=int(order.reason),
+                    reason=OrderReason(int(order.reason)),
                     volume_initial=float(order.volume_initial),
                     volume_current=float(order.volume_current),
                     price_open=float(order.price_open),
@@ -89,10 +98,14 @@ class OrderService:
             )
         return Result.ok(orders, context="orders_get", operation="orders_get")
 
-    def order_calc_margin(self, action: int, symbol: str, volume: float, price: float) -> Result[float]:
+    def order_calc_margin(
+        self, action: int, symbol: str, volume: float, price: float
+    ) -> Result[float]:
         raw = call_mt5(mt5.order_calc_margin, action, symbol, volume, price)
         if raw.data is None:
-            return Result.fail(raw.error, context="order_calc_margin", operation="order_calc_margin")
+            return Result.fail(
+                raw.error, context="order_calc_margin", operation="order_calc_margin"
+            )
         try:
             margin = float(raw.data)
         except (TypeError, ValueError) as exc:
@@ -106,14 +119,25 @@ class OrderService:
                 context="order_calc_margin",
                 operation="order_calc_margin",
             )
-        return Result.ok(margin, context="order_calc_margin", operation="order_calc_margin")
+        return Result.ok(
+            margin, context="order_calc_margin", operation="order_calc_margin"
+        )
 
     def order_calc_profit(
-        self, action: int, symbol: str, volume: float, price_open: float, price_close: float
+        self,
+        action: int,
+        symbol: str,
+        volume: float,
+        price_open: float,
+        price_close: float,
     ) -> Result[float]:
-        raw = call_mt5(mt5.order_calc_profit, action, symbol, volume, price_open, price_close)
+        raw = call_mt5(
+            mt5.order_calc_profit, action, symbol, volume, price_open, price_close
+        )
         if raw.data is None:
-            return Result.fail(raw.error, context="order_calc_profit", operation="order_calc_profit")
+            return Result.fail(
+                raw.error, context="order_calc_profit", operation="order_calc_profit"
+            )
         try:
             profit = float(raw.data)
         except (TypeError, ValueError) as exc:
@@ -127,12 +151,16 @@ class OrderService:
                 context="order_calc_profit",
                 operation="order_calc_profit",
             )
-        return Result.ok(profit, context="order_calc_profit", operation="order_calc_profit")
+        return Result.ok(
+            profit, context="order_calc_profit", operation="order_calc_profit"
+        )
 
     def order_check(self, request: TradeRequest) -> Result[TradeResult]:
-        raw = call_mt5(mt5.order_check, request.model_dump())
+        raw = call_mt5(mt5.order_check, request.to_native())
         if raw.data is None:
-            return Result.fail(raw.error, context="order_check", operation="order_check")
+            return Result.fail(
+                raw.error, context="order_check", operation="order_check"
+            )
         try:
             result = TradeResult(
                 retcode=int(raw.data.retcode),
@@ -160,7 +188,7 @@ class OrderService:
         return Result.ok(result, context="order_check", operation="order_check")
 
     def order_send(self, request: TradeRequest) -> Result[TradeResult]:
-        raw = call_mt5(mt5.order_send, request.model_dump())
+        raw = call_mt5(mt5.order_send, request.to_native())
         if raw.data is None:
             return Result.fail(raw.error, context="order_send", operation="order_send")
         try:

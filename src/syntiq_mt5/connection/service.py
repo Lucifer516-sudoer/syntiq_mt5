@@ -113,7 +113,11 @@ class ConnectionService:
                     context="version",
                     operation="version",
                 )
-            result = (int(version_tuple[0]), int(version_tuple[1]), str(version_tuple[2]))
+            result = (
+                int(version_tuple[0]),
+                int(version_tuple[1]),
+                str(version_tuple[2]),
+            )
         except (TypeError, ValueError, IndexError) as exc:
             return Result.fail(
                 raw.error.model_copy(

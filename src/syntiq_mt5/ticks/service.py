@@ -16,12 +16,15 @@ class TickService:
     attribute-bearing objects or plain dicts depending on the MT5 build)
     into ``Tick`` models, and returns ``Result[list[Tick]]``.
     """
+
     def copy_ticks_from(
         self, symbol: str, date_from: datetime, count: int, flags: int
     ) -> Result[list[Tick]]:
         raw = call_mt5(mt5.copy_ticks_from, symbol, date_from, count, flags)
         if raw.data is None:
-            return Result.fail(raw.error, context="copy_ticks_from", operation="copy_ticks_from")
+            return Result.fail(
+                raw.error, context="copy_ticks_from", operation="copy_ticks_from"
+            )
         try:
             ticks = [
                 Tick(
@@ -29,10 +32,18 @@ class TickService:
                     bid=float(tick.bid if hasattr(tick, "bid") else tick["bid"]),
                     ask=float(tick.ask if hasattr(tick, "ask") else tick["ask"]),
                     last=float(tick.last if hasattr(tick, "last") else tick["last"]),
-                    volume=int(tick.volume if hasattr(tick, "volume") else tick["volume"]),
-                    time_msc=int(tick.time_msc if hasattr(tick, "time_msc") else tick["time_msc"]),
+                    volume=int(
+                        tick.volume if hasattr(tick, "volume") else tick["volume"]
+                    ),
+                    time_msc=int(
+                        tick.time_msc if hasattr(tick, "time_msc") else tick["time_msc"]
+                    ),
                     flags=int(tick.flags if hasattr(tick, "flags") else tick["flags"]),
-                    volume_real=float(tick.volume_real if hasattr(tick, "volume_real") else tick["volume_real"]),
+                    volume_real=float(
+                        tick.volume_real
+                        if hasattr(tick, "volume_real")
+                        else tick["volume_real"]
+                    ),
                 )
                 for tick in raw.data
             ]
@@ -54,7 +65,9 @@ class TickService:
     ) -> Result[list[Tick]]:
         raw = call_mt5(mt5.copy_ticks_range, symbol, date_from, date_to, flags)
         if raw.data is None:
-            return Result.fail(raw.error, context="copy_ticks_range", operation="copy_ticks_range")
+            return Result.fail(
+                raw.error, context="copy_ticks_range", operation="copy_ticks_range"
+            )
         try:
             ticks = [
                 Tick(
@@ -62,10 +75,18 @@ class TickService:
                     bid=float(tick.bid if hasattr(tick, "bid") else tick["bid"]),
                     ask=float(tick.ask if hasattr(tick, "ask") else tick["ask"]),
                     last=float(tick.last if hasattr(tick, "last") else tick["last"]),
-                    volume=int(tick.volume if hasattr(tick, "volume") else tick["volume"]),
-                    time_msc=int(tick.time_msc if hasattr(tick, "time_msc") else tick["time_msc"]),
+                    volume=int(
+                        tick.volume if hasattr(tick, "volume") else tick["volume"]
+                    ),
+                    time_msc=int(
+                        tick.time_msc if hasattr(tick, "time_msc") else tick["time_msc"]
+                    ),
                     flags=int(tick.flags if hasattr(tick, "flags") else tick["flags"]),
-                    volume_real=float(tick.volume_real if hasattr(tick, "volume_real") else tick["volume_real"]),
+                    volume_real=float(
+                        tick.volume_real
+                        if hasattr(tick, "volume_real")
+                        else tick["volume_real"]
+                    ),
                 )
                 for tick in raw.data
             ]
@@ -80,4 +101,6 @@ class TickService:
                 context="copy_ticks_range",
                 operation="copy_ticks_range",
             )
-        return Result.ok(ticks, context="copy_ticks_range", operation="copy_ticks_range")
+        return Result.ok(
+            ticks, context="copy_ticks_range", operation="copy_ticks_range"
+        )

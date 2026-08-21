@@ -13,10 +13,13 @@ class TerminalService:
     ``TerminalInfo`` struct into a typed model, and returns
     ``Result[TerminalInfo]``.
     """
+
     def terminal_info(self) -> Result[TerminalInfo]:
         raw = call_mt5(mt5.terminal_info)
         if raw.data is None:
-            return Result.fail(raw.error, context="terminal_info", operation="terminal_info")
+            return Result.fail(
+                raw.error, context="terminal_info", operation="terminal_info"
+            )
         try:
             info = TerminalInfo(
                 community_account=bool(raw.data.community_account),
