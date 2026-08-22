@@ -61,7 +61,7 @@ jobs:
       - run: uv venv --clear .package-venv
       - run: uv pip install --python .package-venv/bin/python dist/*.whl
       - run: .package-venv/bin/python -c "from syntiq_mt5 import MT5, SyntiqMT5; assert MT5 is SyntiqMT5"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: distributions
           path: dist/
