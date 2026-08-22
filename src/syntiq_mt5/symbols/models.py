@@ -1,9 +1,34 @@
-from pydantic import BaseModel
+"""Typed symbol specification and quote models."""
 
-from syntiq_mt5._core.pricing import calculate_pip_size
+from syntiq_mt5._internal.model import MT5Model
+from syntiq_mt5._internal.pricing import calculate_pip_size
 
 
-class SymbolInfo(BaseModel):
+class SymbolInfo(MT5Model):
+    """Complete symbol specification returned by ``symbol_info``.
+
+    Field names intentionally mirror the official ``SymbolInfo`` record so
+    developers can cross-reference MQL5 documentation directly. Prices and
+    session statistics use broker-defined symbol units; volume constraints are
+    expressed in the instrument's trading-volume units. Integer mode fields are
+    native MT5 enum values or bit masks.
+
+    Attributes:
+        name: Broker-defined symbol name.
+        description: Human-readable instrument description.
+        digits: Number of decimal places in quoted prices.
+        point: Smallest quoted price increment.
+        spread: Current spread in points.
+        bid: Current bid price.
+        ask: Current ask price.
+        trade_contract_size: Contract quantity represented by one trading unit.
+        volume_min: Minimum accepted order volume.
+        volume_max: Maximum accepted order volume.
+        volume_step: Permitted increment between order volumes.
+        filling_mode: Bit mask of supported order filling policies.
+        order_mode: Bit mask of supported order types.
+    """
+
     custom: bool
     chart_mode: int
     select: bool
@@ -117,7 +142,20 @@ class SymbolInfo(BaseModel):
         return self.trade_contract_size
 
 
-class SymbolTick(BaseModel):
+class SymbolTick(MT5Model):
+    """Latest bid, ask, last price, and volume snapshot for a symbol.
+
+    Attributes:
+        time: Tick time as Unix seconds in UTC.
+        bid: Current bid price.
+        ask: Current ask price.
+        last: Last traded price.
+        volume: Integer volume representation.
+        time_msc: Tick time as Unix milliseconds in UTC.
+        flags: Native ``TICK_FLAG_*`` bit mask describing changed fields.
+        volume_real: Floating-point volume representation.
+    """
+
     time: int
     bid: float
     ask: float

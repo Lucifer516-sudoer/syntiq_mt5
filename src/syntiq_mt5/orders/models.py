@@ -1,8 +1,12 @@
 """Order models for active, historical, and trade request/result data."""
 
-from pydantic import BaseModel
+from collections.abc import Mapping
+from types import MappingProxyType
+
+from pydantic import field_validator
 
 from syntiq_mt5 import constants
+from syntiq_mt5._internal.model import MT5Model
 from syntiq_mt5.enums import (
     OrderFilling,
     OrderReason,
@@ -13,7 +17,7 @@ from syntiq_mt5.enums import (
 )
 
 
-class Order(BaseModel):
+class Order(MT5Model):
     """An active (pending) order in MetaTrader 5.
 
     Wraps the raw ``TradeOrder`` struct returned by ``mt5.orders_get()``.
@@ -45,13 +49,14 @@ class Order(BaseModel):
         symbol: Trading instrument name.
         comment: Arbitrary comment attached to the order.
         external_id: Order identifier in an external system.
+
     """
 
     ticket: int
     time_setup: int
-    time_setup_msc: int       # placement time in milliseconds
+    time_setup_msc: int  # placement time in milliseconds
     time_done: int
-    time_done_msc: int        # completion time in milliseconds
+    time_done_msc: int  # completion time in milliseconds
     time_expiration: int
     type: OrderType
     type_time: OrderTime
@@ -88,7 +93,7 @@ class Order(BaseModel):
         return self.state == OrderState.CANCELED
 
 
-class HistoricalOrder(BaseModel):
+class HistoricalOrder(MT5Model):
     """A completed order retrieved from the MT5 trade history.
 
     Wraps the raw ``TradeOrder`` struct returned by
@@ -120,6 +125,7 @@ class HistoricalOrder(BaseModel):
         symbol: Trading instrument name.
         comment: Arbitrary comment attached to the order.
         external_id: Order identifier in an external system.
+
     """
 
     ticket: int
@@ -158,14 +164,14 @@ class HistoricalOrder(BaseModel):
         return self.state == OrderState.FILLED
 
 
-class TradeRequest(BaseModel):
+class TradeRequest(MT5Model):
     """Parameters for a trade operation sent to MT5 via ``order_send`` or ``order_check``.
 
     All enum-typed fields accept either the typed enum member or a raw
     integer — Pydantic coerces integers to the matching enum and rejects
     unknown values at construction time.
 
-    ``model_dump()`` is overridden to cast enum fields back to plain
+    ``to_native()`` casts enum fields back to plain
     ``int`` before the dict is passed to the MT5 C extension, which
     expects native integers.
 
@@ -175,7 +181,8 @@ class TradeRequest(BaseModel):
         order: Ticket of the order to modify or remove (for MODIFY/REMOVE actions).
         symbol: Trading instrument name.
         volume: Trade volume in lots.
-        price: Requested execution price (0.0 for market orders).
+        price: Requested execution price. Market Execution deals may omit it;
+            other execution modes can require a current market price.
         stoplimit: Stop-limit activation price for stop-limit orders.
         sl: Stop loss price; 0.0 to leave unset.
         tp: Take profit price; 0.0 to leave unset.
@@ -187,6 +194,7 @@ class TradeRequest(BaseModel):
         comment: Arbitrary comment to attach to the order.
         position: Ticket of the position to modify (for SLTP action).
         position_by: Ticket of the opposite position (for CLOSE_BY action).
+
     """
 
     action: TradeAction
@@ -207,7 +215,7 @@ class TradeRequest(BaseModel):
     position: int = 0
     position_by: int = 0
 
-    def model_dump(self, **kwargs: object) -> dict[str, object]:  # type: ignore[override]
+    def to_native(self) -> dict[str, object]:
         """Serialize to a plain dict with integer enum values for the MT5 API.
 
         The MT5 C extension's ``order_send`` and ``order_check`` functions
@@ -218,16 +226,32 @@ class TradeRequest(BaseModel):
         Returns:
             A dict suitable for passing directly to ``mt5.order_send()``
             or ``mt5.order_check()``.
+
         """
-        data = super().model_dump(**kwargs)
+        data = super().model_dump()
         for key in ("action", "type", "type_filling", "type_time"):
             if key in data:
                 data[key] = int(data[key])
         return data
 
 
-class TradeResult(BaseModel):
-    """Outcome of a trade request returned by ``order_send`` or ``order_check``.
+class _TradeResponse(MT5Model):
+    """Shared immutable request echo for native trade responses."""
+
+    request: Mapping[str, object] | None = None
+
+    @field_validator("request")
+    @classmethod
+    def _freeze_request(
+        cls,
+        value: Mapping[str, object] | None,
+    ) -> Mapping[str, object] | None:
+        """Copy native request data into a read-only mapping."""
+        return MappingProxyType(dict(value)) if value is not None else None
+
+
+class TradeResult(_TradeResponse):
+    """Outcome of a trade request returned by ``order_send``.
 
     Wraps the raw ``OrderSendResult`` struct from the MT5 C extension.
     The ``retcode`` field is kept as a plain ``int`` rather than an enum
@@ -247,6 +271,7 @@ class TradeResult(BaseModel):
         request_id: Identifier assigned to the request by the client terminal.
         retcode_external: Return code from an external trading system, if any.
         request: Echo of the original ``TradeRequest`` dict, if available.
+
     """
 
     retcode: int
@@ -259,7 +284,6 @@ class TradeResult(BaseModel):
     comment: str
     request_id: int
     retcode_external: int
-    request: dict[str, object] | None = None
 
     @property
     def is_successful(self) -> bool:
@@ -284,3 +308,36 @@ class TradeResult(BaseModel):
     def requires_requote(self) -> bool:
         """Whether the broker requires a new price before the trade can proceed (``TRADE_RETCODE_REQUOTE``)."""
         return self.retcode == constants.TRADE_RETCODE_REQUOTE
+
+
+class TradeCheckResult(_TradeResponse):
+    """Projected account state returned by ``order_check``.
+
+    A successful adapter call can still contain a rejected broker decision;
+    inspect ``accepted`` and ``retcode`` before sending the request.
+
+    Attributes:
+        retcode: Check result code; the official successful value is ``0``.
+        balance: Projected account balance after the requested operation.
+        equity: Projected account equity after the requested operation.
+        profit: Projected floating profit after the requested operation.
+        margin: Projected used margin.
+        margin_free: Projected free margin.
+        margin_level: Projected margin level percentage.
+        comment: Terminal explanation of the check decision.
+        request: Optional native echo of the checked request.
+    """
+
+    retcode: int
+    balance: float
+    equity: float
+    profit: float
+    margin: float
+    margin_free: float
+    margin_level: float
+    comment: str
+
+    @property
+    def accepted(self) -> bool:
+        """Whether MT5 accepted the request for pre-flight validation."""
+        return self.retcode == 0

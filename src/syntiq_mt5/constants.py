@@ -1,6 +1,11 @@
-"""MT5 constants for trading operations, timeframes, and data retrieval."""
+"""Platform-independent MT5 constants for trading and market data."""
 
-from syntiq_mt5._core.mt5_import import mt5
+from types import SimpleNamespace
+
+# Official MT5 integer constants are protocol values, not runtime configuration.
+# Existing declarations use ``getattr`` only to retain their documented fallback
+# notation; this empty namespace makes those canonical values platform-neutral.
+mt5 = SimpleNamespace()
 
 # ── Position Types ────────────────────────────────────────────────────────────
 # POSITION_TYPE_BUY  (0) – long position
@@ -95,10 +100,10 @@ from syntiq_mt5._core.mt5_import import mt5
 # DEAL_REASON_SPLIT    (9) – split
 
 # ── Book Types ────────────────────────────────────────────────────────────────
-# BOOK_TYPE_SELL        (0) – sell order at the specified price
-# BOOK_TYPE_BUY         (1) – buy order at the specified price
-# BOOK_TYPE_SELL_MARKET (2) – sell order at market price
-# BOOK_TYPE_BUY_MARKET  (3) – buy order at market price
+# BOOK_TYPE_SELL        (1) – sell order at the specified price
+# BOOK_TYPE_BUY         (2) – buy order at the specified price
+# BOOK_TYPE_SELL_MARKET (3) – sell order at market price
+# BOOK_TYPE_BUY_MARKET  (4) – buy order at market price
 
 # Trade Actions
 TRADE_ACTION_DEAL = getattr(mt5, "TRADE_ACTION_DEAL", 1)
@@ -174,7 +179,9 @@ DEAL_TYPE_COMMISSION = getattr(mt5, "DEAL_TYPE_COMMISSION", 7)
 DEAL_TYPE_COMMISSION_DAILY = getattr(mt5, "DEAL_TYPE_COMMISSION_DAILY", 8)
 DEAL_TYPE_COMMISSION_MONTHLY = getattr(mt5, "DEAL_TYPE_COMMISSION_MONTHLY", 9)
 DEAL_TYPE_COMMISSION_AGENT_DAILY = getattr(mt5, "DEAL_TYPE_COMMISSION_AGENT_DAILY", 10)
-DEAL_TYPE_COMMISSION_AGENT_MONTHLY = getattr(mt5, "DEAL_TYPE_COMMISSION_AGENT_MONTHLY", 11)
+DEAL_TYPE_COMMISSION_AGENT_MONTHLY = getattr(
+    mt5, "DEAL_TYPE_COMMISSION_AGENT_MONTHLY", 11
+)
 DEAL_TYPE_INTEREST = getattr(mt5, "DEAL_TYPE_INTEREST", 12)
 DEAL_TYPE_BUY_CANCELED = getattr(mt5, "DEAL_TYPE_BUY_CANCELED", 13)
 DEAL_TYPE_SELL_CANCELED = getattr(mt5, "DEAL_TYPE_SELL_CANCELED", 14)
@@ -260,12 +267,18 @@ TRADE_RETCODE_MARKET_CLOSED = getattr(mt5, "TRADE_RETCODE_MARKET_CLOSED", 10018)
 TRADE_RETCODE_NO_MONEY = getattr(mt5, "TRADE_RETCODE_NO_MONEY", 10019)
 TRADE_RETCODE_PRICE_CHANGED = getattr(mt5, "TRADE_RETCODE_PRICE_CHANGED", 10020)
 TRADE_RETCODE_PRICE_OFF = getattr(mt5, "TRADE_RETCODE_PRICE_OFF", 10021)
-TRADE_RETCODE_INVALID_EXPIRATION = getattr(mt5, "TRADE_RETCODE_INVALID_EXPIRATION", 10022)
+TRADE_RETCODE_INVALID_EXPIRATION = getattr(
+    mt5, "TRADE_RETCODE_INVALID_EXPIRATION", 10022
+)
 TRADE_RETCODE_ORDER_CHANGED = getattr(mt5, "TRADE_RETCODE_ORDER_CHANGED", 10023)
 TRADE_RETCODE_TOO_MANY_REQUESTS = getattr(mt5, "TRADE_RETCODE_TOO_MANY_REQUESTS", 10024)
 TRADE_RETCODE_NO_CHANGES = getattr(mt5, "TRADE_RETCODE_NO_CHANGES", 10025)
-TRADE_RETCODE_SERVER_DISABLES_AT = getattr(mt5, "TRADE_RETCODE_SERVER_DISABLES_AT", 10026)
-TRADE_RETCODE_CLIENT_DISABLES_AT = getattr(mt5, "TRADE_RETCODE_CLIENT_DISABLES_AT", 10027)
+TRADE_RETCODE_SERVER_DISABLES_AT = getattr(
+    mt5, "TRADE_RETCODE_SERVER_DISABLES_AT", 10026
+)
+TRADE_RETCODE_CLIENT_DISABLES_AT = getattr(
+    mt5, "TRADE_RETCODE_CLIENT_DISABLES_AT", 10027
+)
 TRADE_RETCODE_LOCKED = getattr(mt5, "TRADE_RETCODE_LOCKED", 10028)
 TRADE_RETCODE_FROZEN = getattr(mt5, "TRADE_RETCODE_FROZEN", 10029)
 TRADE_RETCODE_INVALID_FILL = getattr(mt5, "TRADE_RETCODE_INVALID_FILL", 10030)

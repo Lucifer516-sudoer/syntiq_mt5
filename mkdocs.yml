@@ -1,12 +1,13 @@
-site_name: syntiq-mt5
-site_description: Minimal, typed, and reliable MetaTrader 5 SDK for Python
-site_url: https://lucifer516-sudoer.github.io/syntiq-mt5/
-repo_url: https://github.com/lucifer516-sudoer/syntiq-mt5
-repo_name: Lucifer516-sudoer/syntiq-mt5
-copyright: Copyright &copy; 2024 Lucifer516-sudoer
+site_name: Syntiq MT5
+site_description: A typed, testable Python interface for MetaTrader 5
+site_url: https://lucifer516-sudoer.github.io/syntiq_mt5/
+repo_url: https://github.com/Lucifer516-sudoer/syntiq_mt5
+repo_name: Lucifer516-sudoer/syntiq_mt5
+copyright: Copyright &copy; 2026 Lucifer516-sudoer
 
 theme:
   name: material
+  language: en
   logo: assets/logo.svg
   favicon: assets/favicon.ico
   icon:
@@ -16,20 +17,20 @@ theme:
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: deep purple
-      accent: cyan
+      primary: custom
+      accent: custom
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: deep purple
-      accent: cyan
+      primary: custom
+      accent: custom
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
   font:
-    text: Inter
+    text: Manrope
     code: JetBrains Mono
   features:
     # Navigation
@@ -42,6 +43,7 @@ theme:
     - navigation.top
     - navigation.footer
     - navigation.indexes
+    - navigation.path
     # Search
     - search.highlight
     - search.suggest
@@ -49,7 +51,9 @@ theme:
     # Content
     - content.code.copy
     - content.code.annotate
+    - content.code.select
     - content.tabs.link
+    - content.tooltips
     # TOC
     - toc.follow
 
@@ -126,9 +130,10 @@ extra_css:
   - assets/custom.css
 
 extra:
+  generator: false
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/lucifer516-sudoer/syntiq-mt5
+      link: https://github.com/Lucifer516-sudoer/syntiq_mt5
       name: syntiq-mt5 on GitHub
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/syntiq-mt5/
@@ -136,38 +141,13 @@ extra:
 
 nav:
   - Home: index.md
-  - 🚀 Quickstart: getting-started.md
-  - 🧠 Core Concepts:
-      - core/index.md
-      - Lifecycle: core/lifecycle.md
-      - Result[T]: core/results.md
-      - Error Handling: core/error-handling.md
-  - 📋 Tasks:
-      - tasks/index.md
-      - Get Positions: tasks/get-positions.md
-      - Get Candles: tasks/get-candles.md
-      - Place Orders: tasks/place-orders.md
-      - Get Symbols: tasks/get-symbols.md
-      - Get History: tasks/get-history.md
-      - Get Ticks: tasks/get-ticks.md
-      - Market Book: tasks/market-book.md
-      - Get Account Info: tasks/get-account-info.md
-      - Handle Errors: tasks/handle-errors.md
-  - 📚 Reference:
-      - reference/index.md
-      - Constants: reference/constants.md
-      - Models: reference/models.md
-  - 🔌 API:
-      - api/index.md
-      - Client: api/client.md
-      - Account: api/account.md
-      - Positions: api/positions.md
-      - Market: api/market.md
-      - Orders: api/orders.md
-      - History: api/history.md
-      - Symbols: api/symbols.md
-      - Ticks: api/ticks.md
-      - Terminal: api/terminal.md
-      - Market Book: api/market-book.md
-      - Connection: api/connection.md
-      - Core: api/core.md
+  - Get Started: quickstart.md
+  - Core Design: concepts.md
+  - Guides:
+      - Market Data: market-data.md
+      - Trading Safely: trading.md
+  - Reference:
+      - Public API: api-session.md
+  - Development:
+      - Contributing: development.md
+      - Releasing To PyPI: releasing.md

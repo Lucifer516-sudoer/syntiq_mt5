@@ -1,15 +1,14 @@
 """Deal model for completed MT5 trade history."""
 
-from pydantic import BaseModel
-
+from syntiq_mt5._internal.model import MT5Model
 from syntiq_mt5.enums import DealEntry, DealReason, DealType
 
 
-class Deal(BaseModel):
+class Deal(MT5Model):
     """A completed transaction in the MT5 trade history.
 
     Wraps the raw ``TradeDeal`` struct returned by ``mt5.history_deals_get()``.
-    A deal is created whenever a position is opened, modified, or closed.
+    A deal records an execution that opens, closes, or reverses a position.
     Non-trade operations (balance adjustments, commissions, swaps) also
     appear as deals with non-BUY/SELL ``type`` values.
 
@@ -32,6 +31,7 @@ class Deal(BaseModel):
         symbol: Trading instrument name.
         comment: Arbitrary comment attached to the deal.
         external_id: Deal identifier in an external system.
+
     """
 
     ticket: int
@@ -59,8 +59,9 @@ class Deal(BaseModel):
 
         Returns:
             Net profit in account currency.
+
         """
-        return self.profit + self.commission + self.swap - self.fee
+        return self.profit + self.commission + self.swap + self.fee
 
     @property
     def is_entry(self) -> bool:

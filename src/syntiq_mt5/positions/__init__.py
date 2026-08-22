@@ -1,4 +1,5 @@
-from syntiq_mt5.positions.models import Position
-from syntiq_mt5.positions.service import PositionService
+"""Open-position models."""
 
-__all__ = ["Position", "PositionService"]
+from syntiq_mt5.positions.models import Position
+
+__all__ = ["Position"]

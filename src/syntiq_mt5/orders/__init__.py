@@ -1,3 +1,17 @@
-from syntiq_mt5.orders.models import HistoricalOrder, Order, TradeRequest, TradeResult
+"""Active, historical, and trade-request models."""
 
-__all__ = ["HistoricalOrder", "Order", "TradeRequest", "TradeResult"]
+from syntiq_mt5.orders.models import (
+    HistoricalOrder,
+    Order,
+    TradeCheckResult,
+    TradeRequest,
+    TradeResult,
+)
+
+__all__ = [
+    "HistoricalOrder",
+    "Order",
+    "TradeCheckResult",
+    "TradeRequest",
+    "TradeResult",
+]

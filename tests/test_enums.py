@@ -5,7 +5,7 @@ Covers:
 - Valid enum parsing from enum members (explicit usage)
 - Rejection of invalid integers at model construction time
 - Correct enum semantics (is_buy, is_sell, is_pending, etc.)
-- TradeRequest.model_dump() produces plain ints for the MT5 API
+- TradeRequest.to_native() produces plain ints for the MT5 API
 """
 
 import pytest
@@ -31,13 +31,20 @@ from syntiq_mt5.orders.models import HistoricalOrder, Order, TradeRequest, Trade
 from syntiq_mt5.positions.models import Position
 from syntiq_mt5.ticks.models import Tick
 
-
 # ── Helpers ───────────────────────────────────────────────────────────────────
+
 
 def make_position(**overrides):
     defaults = dict(
-        ticket=1, symbol="EURUSD", price_open=1.1, price_current=1.101,
-        tp=1.102, sl=1.09, volume=0.1, digits=5, point=0.00001,
+        ticket=1,
+        symbol="EURUSD",
+        price_open=1.1,
+        price_current=1.101,
+        tp=1.102,
+        sl=1.09,
+        volume=0.1,
+        digits=5,
+        point=0.00001,
         type=PositionType.BUY,
     )
     return Position(**{**defaults, **overrides})
@@ -45,23 +52,54 @@ def make_position(**overrides):
 
 def make_order(**overrides):
     defaults = dict(
-        ticket=1, time_setup=0, time_setup_msc=0, time_done=0, time_done_msc=0,
-        time_expiration=0, type=OrderType.BUY, type_time=OrderTime.GTC,
-        type_filling=OrderFilling.FOK, state=OrderState.PLACED, magic=0,
-        position_id=0, position_by_id=0, reason=OrderReason.CLIENT,
-        volume_initial=0.1, volume_current=0.1, price_open=1.1, sl=0.0,
-        tp=0.0, price_current=1.1, price_stoplimit=0.0, symbol="EURUSD",
-        comment="", external_id="",
+        ticket=1,
+        time_setup=0,
+        time_setup_msc=0,
+        time_done=0,
+        time_done_msc=0,
+        time_expiration=0,
+        type=OrderType.BUY,
+        type_time=OrderTime.GTC,
+        type_filling=OrderFilling.FOK,
+        state=OrderState.PLACED,
+        magic=0,
+        position_id=0,
+        position_by_id=0,
+        reason=OrderReason.CLIENT,
+        volume_initial=0.1,
+        volume_current=0.1,
+        price_open=1.1,
+        sl=0.0,
+        tp=0.0,
+        price_current=1.1,
+        price_stoplimit=0.0,
+        symbol="EURUSD",
+        comment="",
+        external_id="",
     )
     return Order(**{**defaults, **overrides})
 
 
 def make_deal(**overrides):
     defaults = dict(
-        ticket=1, order=1, time=0, time_msc=0, type=DealType.BUY,
-        entry=DealEntry.IN, magic=0, position_id=1, reason=DealReason.CLIENT,
-        volume=0.1, price=1.1, commission=0.0, swap=0.0, profit=10.0,
-        fee=0.0, symbol="EURUSD", comment="", external_id="",
+        ticket=1,
+        order=1,
+        time=0,
+        time_msc=0,
+        type=DealType.BUY,
+        entry=DealEntry.IN,
+        magic=0,
+        position_id=1,
+        reason=DealReason.CLIENT,
+        volume=0.1,
+        price=1.1,
+        commission=0.0,
+        swap=0.0,
+        profit=10.0,
+        fee=0.0,
+        symbol="EURUSD",
+        comment="",
+        external_id="",
     )
     return Deal(**{**defaults, **overrides})
 
@@ -72,6 +110,7 @@ def make_book_entry(**overrides):
 
 
 # ── PositionType ──────────────────────────────────────────────────────────────
+
 
 class TestPositionType:
     def test_raw_int_buy_coerced(self):
@@ -106,13 +145,17 @@ class TestPositionType:
 
 # ── PositionReason ────────────────────────────────────────────────────────────
 
+
 class TestPositionReason:
-    @pytest.mark.parametrize("raw,expected", [
-        (0, PositionReason.CLIENT),
-        (1, PositionReason.MOBILE),
-        (2, PositionReason.WEB),
-        (3, PositionReason.EXPERT),
-    ])
+    @pytest.mark.parametrize(
+        "raw,expected",
+        [
+            (0, PositionReason.CLIENT),
+            (1, PositionReason.MOBILE),
+            (2, PositionReason.WEB),
+            (3, PositionReason.EXPERT),
+        ],
+    )
     def test_all_valid_reasons_coerced(self, raw, expected):
         p = make_position(reason=raw)
         assert p.reason == expected
@@ -124,18 +167,22 @@ class TestPositionReason:
 
 # ── OrderType ─────────────────────────────────────────────────────────────────
 
+
 class TestOrderType:
-    @pytest.mark.parametrize("raw,expected", [
-        (0, OrderType.BUY),
-        (1, OrderType.SELL),
-        (2, OrderType.BUY_LIMIT),
-        (3, OrderType.SELL_LIMIT),
-        (4, OrderType.BUY_STOP),
-        (5, OrderType.SELL_STOP),
-        (6, OrderType.BUY_STOP_LIMIT),
-        (7, OrderType.SELL_STOP_LIMIT),
-        (8, OrderType.CLOSE_BY),
-    ])
+    @pytest.mark.parametrize(
+        "raw,expected",
+        [
+            (0, OrderType.BUY),
+            (1, OrderType.SELL),
+            (2, OrderType.BUY_LIMIT),
+            (3, OrderType.SELL_LIMIT),
+            (4, OrderType.BUY_STOP),
+            (5, OrderType.SELL_STOP),
+            (6, OrderType.BUY_STOP_LIMIT),
+            (7, OrderType.SELL_STOP_LIMIT),
+            (8, OrderType.CLOSE_BY),
+        ],
+    )
     def test_all_order_types_coerced(self, raw, expected):
         o = make_order(type=raw)
         assert o.type == expected
@@ -146,6 +193,7 @@ class TestOrderType:
 
 
 # ── OrderState ────────────────────────────────────────────────────────────────
+
 
 class TestOrderState:
     def test_placed_is_pending(self):
@@ -171,31 +219,38 @@ class TestOrderState:
         with pytest.raises(ValidationError):
             make_order(state=99)
 
-    @pytest.mark.parametrize("raw,expected", [
-        (0, OrderState.STARTED),
-        (1, OrderState.PLACED),
-        (2, OrderState.CANCELED),
-        (3, OrderState.PARTIAL),
-        (4, OrderState.FILLED),
-        (5, OrderState.REJECTED),
-        (6, OrderState.EXPIRED),
-        (7, OrderState.REQUEST_ADD),
-        (8, OrderState.REQUEST_MODIFY),
-        (9, OrderState.REQUEST_CANCEL),
-    ])
+    @pytest.mark.parametrize(
+        "raw,expected",
+        [
+            (0, OrderState.STARTED),
+            (1, OrderState.PLACED),
+            (2, OrderState.CANCELED),
+            (3, OrderState.PARTIAL),
+            (4, OrderState.FILLED),
+            (5, OrderState.REJECTED),
+            (6, OrderState.EXPIRED),
+            (7, OrderState.REQUEST_ADD),
+            (8, OrderState.REQUEST_MODIFY),
+            (9, OrderState.REQUEST_CANCEL),
+        ],
+    )
     def test_all_states_coerced(self, raw, expected):
         assert make_order(state=raw).state == expected
 
 
 # ── OrderFilling ──────────────────────────────────────────────────────────────
 
+
 class TestOrderFilling:
-    @pytest.mark.parametrize("raw,expected", [
-        (0, OrderFilling.FOK),
-        (1, OrderFilling.IOC),
-        (2, OrderFilling.RETURN),
-        (3, OrderFilling.BOC),
-    ])
+    @pytest.mark.parametrize(
+        "raw,expected",
+        [
+            (0, OrderFilling.FOK),
+            (1, OrderFilling.IOC),
+            (2, OrderFilling.RETURN),
+            (3, OrderFilling.BOC),
+        ],
+    )
     def test_all_filling_types_coerced(self, raw, expected):
         assert make_order(type_filling=raw).type_filling == expected
 
@@ -206,13 +261,17 @@ class TestOrderFilling:
 
 # ── OrderTime ─────────────────────────────────────────────────────────────────
 
+
 class TestOrderTime:
-    @pytest.mark.parametrize("raw,expected", [
-        (0, OrderTime.GTC),
-        (1, OrderTime.DAY),
-        (2, OrderTime.SPECIFIED),
-        (3, OrderTime.SPECIFIED_DAY),
-    ])
+    @pytest.mark.parametrize(
+        "raw,expected",
+        [
+            (0, OrderTime.GTC),
+            (1, OrderTime.DAY),
+            (2, OrderTime.SPECIFIED),
+            (3, OrderTime.SPECIFIED_DAY),
+        ],
+    )
     def test_all_time_types_coerced(self, raw, expected):
         assert make_order(type_time=raw).type_time == expected
 
@@ -223,16 +282,20 @@ class TestOrderTime:
 
 # ── OrderReason ───────────────────────────────────────────────────────────────
 
+
 class TestOrderReason:
-    @pytest.mark.parametrize("raw,expected", [
-        (0, OrderReason.CLIENT),
-        (1, OrderReason.MOBILE),
-        (2, OrderReason.WEB),
-        (3, OrderReason.EXPERT),
-        (4, OrderReason.SL),
-        (5, OrderReason.TP),
-        (6, OrderReason.SO),
-    ])
+    @pytest.mark.parametrize(
+        "raw,expected",
+        [
+            (0, OrderReason.CLIENT),
+            (1, OrderReason.MOBILE),
+            (2, OrderReason.WEB),
+            (3, OrderReason.EXPERT),
+            (4, OrderReason.SL),
+            (5, OrderReason.TP),
+            (6, OrderReason.SO),
+        ],
+    )
     def test_all_order_reasons_coerced(self, raw, expected):
         assert make_order(reason=raw).reason == expected
 
@@ -243,27 +306,31 @@ class TestOrderReason:
 
 # ── DealType ──────────────────────────────────────────────────────────────────
 
+
 class TestDealType:
-    @pytest.mark.parametrize("raw,expected", [
-        (0, DealType.BUY),
-        (1, DealType.SELL),
-        (2, DealType.BALANCE),
-        (3, DealType.CREDIT),
-        (4, DealType.CHARGE),
-        (5, DealType.CORRECTION),
-        (6, DealType.BONUS),
-        (7, DealType.COMMISSION),
-        (8, DealType.COMMISSION_DAILY),
-        (9, DealType.COMMISSION_MONTHLY),
-        (10, DealType.COMMISSION_AGENT_DAILY),
-        (11, DealType.COMMISSION_AGENT_MONTHLY),
-        (12, DealType.INTEREST),
-        (13, DealType.BUY_CANCELED),
-        (14, DealType.SELL_CANCELED),
-        (15, DealType.DIVIDEND),
-        (16, DealType.DIVIDEND_FRANKED),
-        (17, DealType.TAX),
-    ])
+    @pytest.mark.parametrize(
+        "raw,expected",
+        [
+            (0, DealType.BUY),
+            (1, DealType.SELL),
+            (2, DealType.BALANCE),
+            (3, DealType.CREDIT),
+            (4, DealType.CHARGE),
+            (5, DealType.CORRECTION),
+            (6, DealType.BONUS),
+            (7, DealType.COMMISSION),
+            (8, DealType.COMMISSION_DAILY),
+            (9, DealType.COMMISSION_MONTHLY),
+            (10, DealType.COMMISSION_AGENT_DAILY),
+            (11, DealType.COMMISSION_AGENT_MONTHLY),
+            (12, DealType.INTEREST),
+            (13, DealType.BUY_CANCELED),
+            (14, DealType.SELL_CANCELED),
+            (15, DealType.DIVIDEND),
+            (16, DealType.DIVIDEND_FRANKED),
+            (17, DealType.TAX),
+        ],
+    )
     def test_all_deal_types_coerced(self, raw, expected):
         assert make_deal(type=raw).type == expected
 
@@ -287,13 +354,17 @@ class TestDealType:
 
 # ── DealEntry ─────────────────────────────────────────────────────────────────
 
+
 class TestDealEntry:
-    @pytest.mark.parametrize("raw,expected", [
-        (0, DealEntry.IN),
-        (1, DealEntry.OUT),
-        (2, DealEntry.INOUT),
-        (3, DealEntry.OUT_BY),
-    ])
+    @pytest.mark.parametrize(
+        "raw,expected",
+        [
+            (0, DealEntry.IN),
+            (1, DealEntry.OUT),
+            (2, DealEntry.INOUT),
+            (3, DealEntry.OUT_BY),
+        ],
+    )
     def test_all_entries_coerced(self, raw, expected):
         assert make_deal(entry=raw).entry == expected
 
@@ -318,19 +389,23 @@ class TestDealEntry:
 
 # ── DealReason ────────────────────────────────────────────────────────────────
 
+
 class TestDealReason:
-    @pytest.mark.parametrize("raw,expected", [
-        (0, DealReason.CLIENT),
-        (1, DealReason.MOBILE),
-        (2, DealReason.WEB),
-        (3, DealReason.EXPERT),
-        (4, DealReason.SL),
-        (5, DealReason.TP),
-        (6, DealReason.SO),
-        (7, DealReason.ROLLOVER),
-        (8, DealReason.VMARGIN),
-        (9, DealReason.SPLIT),
-    ])
+    @pytest.mark.parametrize(
+        "raw,expected",
+        [
+            (0, DealReason.CLIENT),
+            (1, DealReason.MOBILE),
+            (2, DealReason.WEB),
+            (3, DealReason.EXPERT),
+            (4, DealReason.SL),
+            (5, DealReason.TP),
+            (6, DealReason.SO),
+            (7, DealReason.ROLLOVER),
+            (8, DealReason.VMARGIN),
+            (9, DealReason.SPLIT),
+        ],
+    )
     def test_all_deal_reasons_coerced(self, raw, expected):
         assert make_deal(reason=raw).reason == expected
 
@@ -341,13 +416,17 @@ class TestDealReason:
 
 # ── BookType ──────────────────────────────────────────────────────────────────
 
+
 class TestBookType:
-    @pytest.mark.parametrize("raw,expected", [
-        (1, BookType.SELL),
-        (2, BookType.BUY),
-        (3, BookType.SELL_MARKET),
-        (4, BookType.BUY_MARKET),
-    ])
+    @pytest.mark.parametrize(
+        "raw,expected",
+        [
+            (1, BookType.SELL),
+            (2, BookType.BUY),
+            (3, BookType.SELL_MARKET),
+            (4, BookType.BUY_MARKET),
+        ],
+    )
     def test_all_book_types_coerced(self, raw, expected):
         assert make_book_entry(type=raw).type == expected
 
@@ -380,15 +459,19 @@ class TestBookType:
 
 # ── TradeAction ───────────────────────────────────────────────────────────────
 
+
 class TestTradeAction:
-    @pytest.mark.parametrize("raw,expected", [
-        (1, TradeAction.DEAL),
-        (5, TradeAction.PENDING),
-        (6, TradeAction.SLTP),
-        (7, TradeAction.MODIFY),
-        (8, TradeAction.REMOVE),
-        (10, TradeAction.CLOSE_BY),
-    ])
+    @pytest.mark.parametrize(
+        "raw,expected",
+        [
+            (1, TradeAction.DEAL),
+            (5, TradeAction.PENDING),
+            (6, TradeAction.SLTP),
+            (7, TradeAction.MODIFY),
+            (8, TradeAction.REMOVE),
+            (10, TradeAction.CLOSE_BY),
+        ],
+    )
     def test_all_trade_actions_coerced(self, raw, expected):
         req = TradeRequest(action=raw, type=OrderType.BUY)
         assert req.action == expected
@@ -399,6 +482,7 @@ class TestTradeAction:
 
 
 # ── TradeRequest serialization ────────────────────────────────────────────────
+
 
 class TestTradeRequestSerialization:
     def test_model_dump_produces_plain_ints(self):
@@ -411,30 +495,39 @@ class TestTradeRequestSerialization:
             volume=0.1,
             price=1.1,
         )
-        data = req.model_dump()
+        data = req.to_native()
         assert type(data["action"]) is int
         assert type(data["type"]) is int
         assert type(data["type_filling"]) is int
         assert type(data["type_time"]) is int
-        assert data["action"] == 1   # TRADE_ACTION_DEAL
-        assert data["type"] == 0     # ORDER_TYPE_BUY
+        assert data["action"] == 1  # TRADE_ACTION_DEAL
+        assert data["type"] == 0  # ORDER_TYPE_BUY
         assert data["type_filling"] == 1  # ORDER_FILLING_IOC
-        assert data["type_time"] == 1     # ORDER_TIME_DAY
+        assert data["type_time"] == 1  # ORDER_TIME_DAY
 
     def test_raw_int_inputs_serialize_correctly(self):
         req = TradeRequest(action=1, type=0)
-        data = req.model_dump()
+        data = req.to_native()
         assert data["action"] == 1
         assert data["type"] == 0
 
 
 # ── TradeResult retcode ───────────────────────────────────────────────────────
 
+
 class TestTradeResult:
     def _make(self, retcode: int) -> TradeResult:
         return TradeResult(
-            retcode=retcode, deal=0, order=0, volume=0.0, price=0.0,
-            bid=0.0, ask=0.0, comment="", request_id=0, retcode_external=0,
+            retcode=retcode,
+            deal=0,
+            order=0,
+            volume=0.0,
+            price=0.0,
+            bid=0.0,
+            ask=0.0,
+            comment="",
+            request_id=0,
+            retcode_external=0,
         )
 
     def test_done_is_successful(self):
@@ -462,10 +555,19 @@ class TestTradeResult:
 
 # ── Tick flags (bitmask — not enum) ──────────────────────────────────────────
 
+
 class TestTickFlags:
     def _make(self, flags: int) -> Tick:
-        return Tick(time=0, bid=1.1, ask=1.101, last=0.0, volume=0,
-                    time_msc=0, flags=flags, volume_real=0.0)
+        return Tick(
+            time=0,
+            bid=1.1,
+            ask=1.101,
+            last=0.0,
+            volume=0,
+            time_msc=0,
+            flags=flags,
+            volume_real=0.0,
+        )
 
     def test_bid_flag(self):
         t = self._make(2)  # TICK_FLAG_BID
@@ -497,16 +599,34 @@ class TestTickFlags:
 
 # ── HistoricalOrder ───────────────────────────────────────────────────────────
 
+
 class TestHistoricalOrder:
     def _make(self, state: OrderState) -> HistoricalOrder:
         return HistoricalOrder(
-            ticket=1, time_setup=100, time_setup_msc=0, time_done=200,
-            time_done_msc=0, time_expiration=0, type=OrderType.BUY,
-            type_time=OrderTime.GTC, type_filling=OrderFilling.FOK,
-            state=state, magic=0, position_id=0, position_by_id=0,
-            reason=OrderReason.CLIENT, volume_initial=0.1, volume_current=0.0,
-            price_open=1.1, sl=0.0, tp=0.0, price_current=1.1,
-            price_stoplimit=0.0, symbol="EURUSD", comment="", external_id="",
+            ticket=1,
+            time_setup=100,
+            time_setup_msc=0,
+            time_done=200,
+            time_done_msc=0,
+            time_expiration=0,
+            type=OrderType.BUY,
+            type_time=OrderTime.GTC,
+            type_filling=OrderFilling.FOK,
+            state=state,
+            magic=0,
+            position_id=0,
+            position_by_id=0,
+            reason=OrderReason.CLIENT,
+            volume_initial=0.1,
+            volume_current=0.0,
+            price_open=1.1,
+            sl=0.0,
+            tp=0.0,
+            price_current=1.1,
+            price_stoplimit=0.0,
+            symbol="EURUSD",
+            comment="",
+            external_id="",
         )
 
     def test_was_filled(self):
@@ -525,6 +645,7 @@ class TestHistoricalOrder:
 
 
 # ── Enum identity and int compatibility ───────────────────────────────────────
+
 
 class TestEnumIntCompatibility:
     """IntEnum members must compare equal to their integer values."""

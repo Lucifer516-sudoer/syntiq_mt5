@@ -1,4 +1,5 @@
-from syntiq_mt5.connection.models import LoginCredential
-from syntiq_mt5.connection.service import ConnectionService
+"""Terminal connection configuration models."""
 
-__all__ = ["ConnectionService", "LoginCredential"]
+from syntiq_mt5.connection.models import LoginCredential
+
+__all__ = ["LoginCredential"]

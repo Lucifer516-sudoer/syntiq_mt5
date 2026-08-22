@@ -1,5 +1,6 @@
 # Python
 .venv/
+.package-venv/
 .mypy_cache/
 __pycache__/
 scripts/scratch_connection.py
@@ -7,9 +8,6 @@ scripts/scratch_connection.py
 
 # General settings
 .vscode/
-
-# uv
-uv.lock
 
 .pytest_cache/
 .ruff_cache/

@@ -1,9 +1,9 @@
 """Terminal information model."""
 
-from pydantic import BaseModel
+from syntiq_mt5._internal.model import MT5Model
 
 
-class TerminalInfo(BaseModel):
+class TerminalInfo(MT5Model):
     """State and configuration of the connected MetaTrader 5 terminal.
 
     Wraps the raw ``TerminalInfo`` struct returned by ``mt5.terminal_info()``.
@@ -24,7 +24,7 @@ class TerminalInfo(BaseModel):
         build: Terminal build number.
         maxbars: Maximum number of bars in a chart.
         codepage: Code page used for string encoding.
-        ping_last: Last measured round-trip latency to the broker server (ms).
+        ping_last: Last measured round-trip latency to the broker server in microseconds.
         community_balance: MQL5 community account balance.
         retransmission: Network packet retransmission ratio (0.0–1.0).
         company: Broker company name as shown in the terminal.
@@ -33,6 +33,7 @@ class TerminalInfo(BaseModel):
         path: Path to the terminal executable.
         data_path: Path to the terminal data directory.
         commondata_path: Path to the shared data directory for all terminals.
+
     """
 
     community_account: bool
@@ -64,6 +65,7 @@ class TerminalInfo(BaseModel):
 
         Returns:
             Version string derived from the build number.
+
         """
         return f"Build {self.build}"
 
@@ -77,5 +79,6 @@ class TerminalInfo(BaseModel):
 
         Returns:
             ``True`` if the terminal can accept trade requests.
+
         """
         return self.connected and self.trade_allowed and not self.tradeapi_disabled

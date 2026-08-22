@@ -1,37 +1,36 @@
 [project]
 name = "syntiq-mt5"
-version = "0.1.0"
-description = "Minimal, typed and reliable SDK wrapper for the MetaTrader5 Python API."
+version = "0.2.0"
+description = "A typed, testable Python interface for MetaTrader 5."
 readme = "README.md"
 requires-python = ">=3.12"
-license = { text = "MIT" }
+license = "MIT"
 authors = [{ name = "Lucifer516-sudoer" }]
+keywords = ["algorithmic-trading", "forex", "metatrader", "metatrader5", "trading"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
+  "Operating System :: Microsoft :: Windows",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Topic :: Software Development :: Libraries",
   "Typing :: Typed",
 ]
 dependencies = [
-  "metatrader5>=5.0.5735; sys_platform == 'win32'",
-  "pydantic>=2.13.3",
+  "MetaTrader5>=5.0.5735; sys_platform == 'win32'",
+  "pydantic>=2.12,<3",
 ]
 
-[project.optional-dependencies]
-dev = [
-  "mypy>=1.20.1",
-  "pytest>=9.0.1",
-  "ruff>=0.15.11",
-  "mkdocs>=1.6.1,<2",
-  "mkdocs-material>=9.7.6,<10",
-  "mkdocstrings[python]>=1.0.4",
-]
+[project.urls]
+Documentation = "https://lucifer516-sudoer.github.io/syntiq_mt5/"
+Issues = "https://github.com/Lucifer516-sudoer/syntiq_mt5/issues"
+Repository = "https://github.com/Lucifer516-sudoer/syntiq_mt5"
+Changelog = "https://github.com/Lucifer516-sudoer/syntiq_mt5/blob/main/CHANGELOG.md"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.27,<2"]
 build-backend = "hatchling.build"
 
 
@@ -43,10 +42,14 @@ include = ["src/syntiq_mt5", "README.md", "LICENSE", "CHANGELOG.md", "pyproject.
 
 [dependency-groups]
 dev = [
-    "mkdocs>=1.6.1,<2",
-    "mkdocs-material>=9.7.6,<10",
-    "mkdocstrings[python]>=1.0.4",
-    "mypy>=1.20.1",
-    "pytest>=9.0.1",
-    "ruff>=0.15.11",
+  "mkdocs>=1.6.1,<2",
+  "mkdocs-material>=9.7.6,<10",
+  "mkdocstrings[python]>=1.0.4,<2",
+  "mypy>=1.20,<3",
+  "pytest>=9,<10",
+  "ruff>=0.15,<1",
 ]
+
+[tool.pytest.ini_options]
+addopts = ["--strict-config", "--strict-markers"]
+testpaths = ["tests"]

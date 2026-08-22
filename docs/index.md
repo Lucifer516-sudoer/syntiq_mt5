@@ -1,149 +1,155 @@
 ---
+title: Syntiq MT5
 hide:
   - navigation
   - toc
 ---
 
-<div class="hero" markdown>
+<section class="syntiq-hero" markdown>
+<div class="syntiq-hero__copy" markdown>
 
-# syntiq-mt5
+<span class="syntiq-eyebrow">PYTHON &times; METATRADER 5</span>
 
-### Production-grade MetaTrader 5 SDK for Python
+# Trade the market.<br><span>Not the API.</span>
 
-Typed. Reliable. Developer-first.
+The typed, testable interface that gives MetaTrader 5 honest lifecycle,
+predictable failures, and a Python-native developer experience.
 
-[Get Started](getting-started.md){ .md-button .md-button--primary }
-[View on GitHub](https://github.com/lucifer516-sudoer/syntiq-mt5){ .md-button .md-button--secondary }
+<div class="syntiq-actions" markdown>
+[Build your first session](quickstart.md){ .md-button .md-button--primary }
+[Explore the design](concepts.md){ .md-button .syntiq-button--quiet }
+</div>
+
+<div class="syntiq-badges">
+  <span>Python 3.12+</span>
+  <span>Fully typed</span>
+  <span>Demo-first</span>
+</div>
 
 </div>
 
----
-
-## Why syntiq-mt5?
-
-The raw `MetaTrader5` Python package returns untyped structs, stores errors in global state, and requires you to know integer constants by heart. **syntiq-mt5 fixes all of that.**
-
-<div class="grid cards" markdown>
-
--   :material-check-circle: __Typed Models__
-
-    Pydantic v2 models with full IDE completion. No more guessing field names or types.
-
--   :material-shield-check: __No Exceptions__
-
-    Every operation returns `Result[T]`. Handle success and failure explicitly — no surprises.
-
--   :material-code-tags: __Named Constants__
-
-    Use `ORDER_TYPE_BUY` instead of `0`. Use `TIMEFRAME_H1` instead of `16385`. Self-documenting code.
-
--   :material-connection: __Automatic Cleanup__
-
-    Context manager support. `shutdown()` is called automatically — even on exceptions.
-
+<div class="syntiq-terminal" markdown>
+<div class="syntiq-terminal__bar">
+  <span></span><span></span><span></span>
+  <strong>strategy.py</strong>
 </div>
 
----
+```python
+from syntiq_mt5 import SyntiqMT5, constants
 
-## Raw MT5 vs syntiq-mt5
-
-| Raw MT5 | syntiq-mt5 |
-|---------|------------|
-| Untyped namedtuples | Pydantic models with IDE completion |
-| `mt5.last_error()` after every call | `result.error_code` / `result.error_message` |
-| Magic integers (`0`, `1`, `16385`) | Named constants (`ORDER_TYPE_BUY`, `TIMEFRAME_H1`) |
-| Raises on connection failure | Returns `Result.fail(...)` |
-| Manual `mt5.shutdown()` | Automatic via context manager |
-
----
-
-## Quick example
-
-=== "syntiq-mt5"
-
-    ```python
-    from pydantic import SecretStr
-    from syntiq_mt5 import LoginCredential, MetaTrader5Client, constants
-
-    creds = LoginCredential(
-        login=12345678,
-        password=SecretStr("your-password"),
-        server="Broker-Demo",
+with SyntiqMT5(credentials) as mt5:
+    account = mt5.account_info()
+    candles = mt5.candles(
+        "EURUSD",
+        constants.TIMEFRAME_H1,
+        count=100,
     )
 
-    with MetaTrader5Client() as mt5:
-        mt5.initialize(creds)
-        mt5.login(creds)
+    print(account.equity)
+    print(candles[-1].close)
+```
 
-        res = mt5.positions()
-        if res.success:
-            for p in res.data:
-                print(f"{p.symbol}  {p.volume} lots  {p.pips_profit:+.1f} pips")
-    ```
+<div class="syntiq-terminal__status">
+  <span class="syntiq-pulse"></span>
+  Session closed cleanly
+</div>
+</div>
+</section>
 
-    ```text title="Output"
-    EURUSD  0.10 lots  +12.3 pips
-    GBPUSD  0.05 lots  -4.7 pips
-    ```
-
-=== "Raw MT5"
-
-    ```python
-    import MetaTrader5 as mt5
-
-    if not mt5.initialize():
-        print("initialize() failed")
-        quit()
-
-    if not mt5.login(12345678, password="your-password", server="Broker-Demo"):
-        print("login() failed, error code =", mt5.last_error())
-        mt5.shutdown()
-        quit()
-
-    positions = mt5.positions_get()
-    if positions is None:
-        print("No positions, error code =", mt5.last_error())
-    elif len(positions) > 0:
-        for p in positions:
-            # p is a namedtuple — no IDE completion, no type hints
-            print(p.symbol, p.volume, p.profit)
-
-    mt5.shutdown()
-    ```
-
----
-
-## Install
-
+<div class="syntiq-install" markdown>
+<span>Start with one command</span>
 ```bash
 pip install syntiq-mt5
 ```
+</div>
 
-!!! info "Requirements"
-    - **Windows** — the MT5 Python API is Windows-only
-    - **MetaTrader 5 terminal** installed ([download](https://www.metatrader5.com/en/download))
-    - **Python 3.12+**
+<section class="syntiq-proof" markdown>
+<div><strong>1</strong><span>managed process-global session</span></div>
+<div><strong>0</strong><span>ambiguous result wrappers</span></div>
+<div><strong>158</strong><span>contract tests</span></div>
+<div><strong>100%</strong><span>typed public package</span></div>
+</section>
 
----
+## A small interface with real depth
 
-## What's next?
+Syntiq does not mirror thirty native functions behind thirty thin wrappers. One
+session concentrates the hard parts: terminal ownership, error capture, UTC
+normalization, response conversion, and resource cleanup.
 
-<div class="grid cards" markdown>
+<section class="syntiq-feature-grid">
+<article class="syntiq-feature">
+  <span class="syntiq-feature__number">01</span>
+  <h3>Direct values</h3>
+  <p><code>positions()</code> returns <code>tuple[Position, ...]</code>. Empty means empty. Failure means an exception.</p>
+</article>
+<article class="syntiq-feature">
+  <span class="syntiq-feature__number">02</span>
+  <h3>Scoped failures</h3>
+  <p>Every <code>MT5Error</code> carries the operation, native code, and human-readable message that belong together.</p>
+</article>
+<article class="syntiq-feature">
+  <span class="syntiq-feature__number">03</span>
+  <h3>Correct trade semantics</h3>
+  <p>Transport failure raises. Broker rejection remains a typed response you can inspect and act on.</p>
+</article>
+<article class="syntiq-feature">
+  <span class="syntiq-feature__number">04</span>
+  <h3>Test anywhere</h3>
+  <p>Inject an adapter and run deterministic strategy tests on Linux, macOS, Windows, or CI without a terminal.</p>
+</article>
+</section>
 
--   :material-rocket-launch: __[Quickstart](getting-started.md)__
+<section class="syntiq-split" markdown>
+<div markdown>
 
-    Full working example in under 60 seconds
+## The lifecycle is the architecture
 
--   :material-chart-timeline: __[Core Concepts](core/lifecycle.md)__
+MetaTrader 5 owns one connection and one error state per process. `SyntiqMT5`
+makes that constraint visible instead of letting client objects silently fight
+over global state.
 
-    Understand `initialize → login → use → shutdown`
+1. Acquire exclusive process ownership.
+2. Initialize and optionally authenticate.
+3. Capture each call and `last_error()` atomically.
+4. Release subscriptions and shut down on every exit path.
 
--   :material-code-braces: __[Tasks](tasks/get-positions.md)__
+[Understand lifecycle and failures](concepts.md){ .syntiq-text-link }
 
-    Copy-paste recipes for every operation
+</div>
+<div class="syntiq-flow" aria-label="Syntiq architecture flow">
+  <div><small>YOUR CODE</small><strong>SyntiqMT5</strong></div>
+  <span>&darr;</span>
+  <div><small>PUBLIC SEAM</small><strong>MT5Adapter</strong></div>
+  <span>&darr;</span>
+  <div><small>NATIVE PROCESS</small><strong>MetaTrader 5</strong></div>
+</div>
+</section>
 
--   :material-book-open-variant: __[API Reference](api/index.md)__
+## Start where you are
 
-    Complete auto-generated API documentation
+<div class="syntiq-paths" markdown>
+
+[**Connect safely**<br><span>Credentials, context management, and your first account snapshot.</span>](quickstart.md)
+
+[**Read the market**<br><span>Quotes, completed candles, tick history, and managed market depth.</span>](market-data.md)
+
+[**Build trade flows**<br><span>Validate requests, separate transport from broker decisions, and execute deliberately.</span>](trading.md)
+
+[**Ship with confidence**<br><span>Google-style references, strict CI, trusted publishing, and reproducible uv builds.</span>](development.md)
+
+</div>
+
+!!! warning "Designed for deliberate trading"
+    Syntiq improves software correctness; it cannot make a trading strategy safe.
+    Validate every execution path against a demo account before using live funds.
+
+<div class="syntiq-closing" markdown>
+
+## Less glue. More strategy.
+
+Build on a session that tells the truth about the terminal beneath it.
+
+[Get started](quickstart.md){ .md-button .md-button--primary }
+[Read the API](api-session.md){ .md-button .syntiq-button--quiet }
 
 </div>

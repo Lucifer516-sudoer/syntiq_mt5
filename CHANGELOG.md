@@ -4,69 +4,39 @@ All notable changes to this project are documented in this file.
 
 This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0] - 2026-04-30
+## [0.2.0] - 2026-08-22
 
-### Added - Full MT5 API Coverage
+### Changed
 
-#### Account & Terminal
-- `account_info()` - Retrieve account balance, equity, margin, and leverage
-- `terminal_info()` - Get terminal version, build, and connection status
-- `AccountInfo` model with computed properties for margin usage and equity ratios
-- `TerminalInfo` model with trading readiness checks
+- Replaced the public `Result[T]` contract with direct typed return values and
+  typed `MT5Error` exceptions.
+- Introduced the managed `MT5` session as the primary public interface.
+- Removed the legacy Result client, shallow service modules, and compatibility
+  operational aliases; `MT5` is now the sole operational interface.
+- Moved native access behind an injectable, lazy, process-serialized adapter.
+- Made all validated credentials, requests, and terminal snapshots immutable.
+- Changed collection results to immutable tuples and kept empty results distinct
+  from native failure sentinels.
+- Made recent candle retrieval exclude the still-forming current bar by default.
+- Required timezone-aware datetimes and normalized them to UTC.
 
-#### Symbol Operations
-- `symbols_total()` - Count available symbols
-- `symbols_get()` - List all symbols or filter by group
-- `symbol_select()` - Enable/disable symbols for trading
-- `symbol_info()` - Get detailed symbol specifications
-- `symbol_info_tick()` - Retrieve current tick data
-- `SymbolInfo` model with 100+ fields and computed properties
-- `SymbolTick` model with spread and mid-price calculations
+### Fixed
 
-#### Market Data Extensions
-- `copy_rates_from()` - Get candles from specific date
-- `copy_rates_range()` - Get candles in date range
-- `copy_ticks_from()` - Retrieve tick data from specific date
-- `copy_ticks_range()` - Retrieve tick data in date range
-- `Tick` model with flag-based filtering and computed properties
+- Modeled `order_check()` with its real projected-account response shape instead
+  of reusing the `order_send()` result.
+- Treated `False` from symbol selection and market-book operations as failure.
+- Corrected margin and profit calculation parameters to use order types.
+- Corrected history group filtering so it accompanies a date range.
+- Corrected signed deal-fee handling in `Deal.net_profit`.
+- Preserved MT5 trade placement and partial-fill responses as accepted outcomes.
 
-#### Order Management
-- `orders_total()` - Count pending orders
-- `orders_get()` - Retrieve pending orders with filtering
-- `order_calc_margin()` - Calculate required margin
-- `order_calc_profit()` - Calculate expected profit
-- `order_check()` - Validate order before sending
-- `order_send()` - Execute trade orders
-- `Order` model with state checking properties
-- `TradeRequest` model for order parameters
-- `TradeResult` model with success/failure checks
+### Project
 
-#### Trading History
-- `history_orders_total()` - Count historical orders
-- `history_orders_get()` - Retrieve historical orders
-- `history_deals_total()` - Count historical deals
-- `history_deals_get()` - Retrieve historical deals
-- `HistoricalOrder` model with duration calculations
-- `Deal` model with net profit calculations including commission and swap
-
-#### Market Depth
-- `market_book_add()` - Subscribe to Level 2 order book
-- `market_book_get()` - Retrieve order book entries
-- `market_book_release()` - Unsubscribe from order book
-- `BookEntry` model with buy/sell identification
-
-### Documentation
-- Added 6 new task pages: account info, symbols, ticks, history, orders, market book
-- Updated navigation in mkdocs.yml
-- Updated README with complete public API listing
-- Added full_api_demo.py example demonstrating all features
-
-### Architecture
-- Maintained strict Result[T] pattern across all new features
-- Followed model → service → client layered architecture
-- All MT5 calls use _core.raw.call_mt5 wrapper
-- Comprehensive error handling with operation metadata
-- Type-safe with mypy validation passing
+- Added a committed uv lockfile and Ruff formatting workflow.
+- Added Linux and Windows CI on Python 3.12 and 3.13.
+- Added strict documentation and wheel installation checks.
+- Added GitHub Pages deployment and tag-gated PyPI trusted publishing.
+- Rebuilt the README, examples, MkDocs journey, and contributor documentation.
 
 ## [0.1.0] - 2026-04-30
 

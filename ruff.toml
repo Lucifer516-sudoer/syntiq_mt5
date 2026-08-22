@@ -1,5 +1,5 @@
 line-length = 88
-target-version = "py310"
+target-version = "py312"
 
 [lint]
 select = [
@@ -10,19 +10,29 @@ select = [
     "UP",  # modern Python (pyupgrade)
     "B",   # bugbear (real mistakes)
     "C4",  # comprehensions
+    "D",   # public docstrings
     "SIM", # simplifications
-    "ARG", # unused arguments
     "RET", # return issues
     "PTH", # pathlib over os
     "RUF"  # ruff-specific rules
 ]
 
 ignore = [
+    "D203",  # prefer no blank line before class docstrings
+    "D213",  # prefer summary on the first line
     "E501",  # handled by line-length
+    "RUF002",  # prose may use typographic punctuation
+    "RUF003",  # comments may use typographic punctuation
+    "UP046",  # Pydantic generic models still use Generic[T]
 ]
 
 [lint.per-file-ignores]
 "__init__.py" = ["F401"]  # allow re-exports
+"examples/**/*.py" = ["D"]
+"tests/**/*.py" = ["ARG", "B011", "C408", "D", "S101"]
+
+[lint.pydocstyle]
+convention = "google"
 
 [format]
 quote-style = "double"
