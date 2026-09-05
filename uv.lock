@@ -497,15 +497,15 @@ wheels = [
 
 [[package]]
 name = "metatrader5"
-version = "5.0.6090"
+version = "5.0.6147"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/74/be/628204c9990d55aa075a6d0182b59fa0feddc0a842d628fb943b69df102e/metatrader5-5.0.6090-cp312-cp312-win_amd64.whl", hash = "sha256:70601ae582a0d9a5b8e4d074b6f198ccf82a3172ced4c8eb4b47ad091f578a86", size = 47928, upload-time = "2026-08-01T12:31:19.146Z" },
-    { url = "https://files.pythonhosted.org/packages/e8/0f/b9959c2b74fc5f8d0b410ee872204ec12153540e1cb90aac92d4906cd0f9/metatrader5-5.0.6090-cp313-cp313-win_amd64.whl", hash = "sha256:66b5dfab5ca1411856595500232111f330e67b3293791bfddfb4c202b0f87db1", size = 47929, upload-time = "2026-08-01T12:31:20.34Z" },
-    { url = "https://files.pythonhosted.org/packages/3b/f7/fe005151ebdb9cc5fc01d10abb5d0222e6853f69e71c3004c06f8d7c1c95/metatrader5-5.0.6090-cp314-cp314-win_amd64.whl", hash = "sha256:b79f9729fb7a48e73de911ae14bf6b6310c1ae2c68020fac1887f632d11c0621", size = 49490, upload-time = "2026-08-01T12:31:21.579Z" },
+    { url = "https://files.pythonhosted.org/packages/94/aa/9416b777a5458a936eadae06a0e237d0f6a3890d9548e37ee8b33505b897/metatrader5-5.0.6147-cp312-cp312-win_amd64.whl", hash = "sha256:5b1c0f886809b38cf594c0142bc2a32d98d34e8b9fc0297bab7878957be00f56", size = 47969, upload-time = "2026-08-27T00:15:40.459Z" },
+    { url = "https://files.pythonhosted.org/packages/20/9d/059ad53ee601b1c46df19de06a058146d44e646401a1762d9e8238b4b4b0/metatrader5-5.0.6147-cp313-cp313-win_amd64.whl", hash = "sha256:fd8cb7023ffa7f6d405546647b38e5bb2561c0c00d6d7a4e88b6dce00d3a20f5", size = 47967, upload-time = "2026-08-27T00:15:41.34Z" },
+    { url = "https://files.pythonhosted.org/packages/d9/a6/8f9112837c59f1f4829ab636f30e64b7a07c65d39ab30557a2c94f9055f2/metatrader5-5.0.6147-cp314-cp314-win_amd64.whl", hash = "sha256:ff08a96d3fea83a881f71fc03a3ed4b44e41167ac7b0f2e79bc084e98333d23d", size = 49528, upload-time = "2026-08-27T00:15:42.342Z" },
 ]
 
 [[package]]
